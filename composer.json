@@ -18,7 +18,8 @@
     },
     "require-dev": {
         "swoole/ide-helper": "^4.4",
-        "phpunit/phpunit": "^9.1"
+        "phpunit/phpunit": "^9.1",
+        "phpunit/php-code-coverage": "^8.0"
     },
     "license": "MIT",
     "minimum-stability": "stable",

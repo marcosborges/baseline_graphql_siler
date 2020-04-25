@@ -1,0 +1,68 @@
+#https://cloud.google.com/cloud-build/docs/build-config?hl=pt_BR
+#https://github.com/GoogleCloudPlatform/cloud-builders
+#https://github.com/GoogleCloudPlatform/cloud-builders-community
+#https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
+#gcloud builds submit --config CloudBuilder.yml
+
+steps:
+  
+- name: 'ubuntu'
+  args: ['echo', 'hello world']
+# Checkout
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/marcosborges/baseline_graphql_siler.git']
+
+# Restore
+steps:
+- name: 'gcr.io/$PROJECT_ID/composer'
+  args: ['install']
+
+# Test
+steps:
+- name: 'gcr.io/$PROJECT_ID/composer'
+  args: ['test']
+
+# Review
+steps:
+  - name: 'gcr.io/$PROJECT_ID/sonar-scanner:latest'
+    args:
+    - '-Dsonar.host.url=https://sonarcloud.io'
+    - '-Dsonar.login={specify}'
+    - '-Dsonar.projectKey={specify}'
+    - '-Dsonar.organization={specify}'
+    - '-Dsonar.sources=.'
+tags: ['cloud-builders-community']
+
+# Build
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/my-project/image1', '-f', 'Build.Dockerfile' '.']
+
+#env:
+#  - 'CLOUDSDK_COMPUTE_ZONE=us-east4-b'
+#  - 'CLOUDSDK_CONTAINER_CLUSTER=my-cluster'
+# Registry
+
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/my-project/my-image:$SHORT_SHA']
+
+
+# Approval
+
+# Deploy
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+      - 'run'
+      - 'deploy'
+      - 'cloudrunservice'
+      - '--image'
+      - 'gcr.io/gcbdocs/hello'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+# Validate
+images: ['gcr.io/my-project/image1', 'gcr.io/my-project/image2']
+  
