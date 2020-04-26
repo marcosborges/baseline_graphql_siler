@@ -125,6 +125,7 @@ pipeline {
             steps {
                 script {
                     unstash 'restoreSources'
+                    echo "${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION}"
                     container = docker.build("${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
                 }
             }
@@ -138,7 +139,7 @@ pipeline {
         stage('Snapshot Registry') {
             steps {
                 script {
-                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_SNAPSHOT_HOST}""", returnStdout: false
                     docker.withRegistry("https://${env.REGISTRY_SNAPSHOT_HOST}") {
                         container.push("${env.APP_VERSION}")
                         container.push("${commit}")
@@ -151,7 +152,7 @@ pipeline {
                     echo 'Falha ao registrar o container :('
                 }
             }
-        }  
+        }
 
         stage('Development Deploy') {
             when {
@@ -292,12 +293,17 @@ pipeline {
         stage('Release Registry') {
             steps {
                 script {
-                    echo "Aplicação publicada cm sucesso: ${url.uat}" 
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_RELEASE_HOST}""", returnStdout: false
+                    docker.withRegistry("https://${env.REGISTRY_RELEASE_HOST}") {
+                        container.push("${env.APP_VERSION}")
+                        container.push("${commit}")
+                        container.push("latest")
+                    }
                 }
             }
             post {
                 failure {
-                    echo 'Falha ao realizar o deploy :('
+                    echo 'Falha ao registrar o container :('
                 }
             }
         }
