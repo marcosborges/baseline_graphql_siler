@@ -23,8 +23,7 @@ pipeline {
         APP_VERSION = readJSON(file: 'composer.json').version.trim()
         SONAR_PROJECT_KEY = "marcosborges_baseline_graphql_siler"
         SONAR_ORGANIZATION_KEY = "baseline-graphql-siler"
-        REGISTRY_SNAPSHOT_HOST = "${credentials('REGISTRY_HOST')}snapshot"
-        REGISTRY_RELEASE_HOST = "${credentials('REGISTRY_HOST')}release"
+        REGISTRY_HOST = credentials('REGISTRY_HOST')
         GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SERVICE_ACCOUNT')
         GOOGLE_REGION = "us-east1"
         GOOGLE_ZONE = "us-east1-a"
@@ -125,8 +124,8 @@ pipeline {
             steps {
                 script {
                     unstash 'restoreSources'
-                    echo "${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION}"
-                    container = docker.build("${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
+                    echo "${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}"
+                    container = docker.build("${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
                 }
             }
             post {
@@ -139,8 +138,8 @@ pipeline {
         stage('Snapshot Registry') {
             steps {
                 script {
-                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_SNAPSHOT_HOST}""", returnStdout: false
-                    docker.withRegistry("https://${env.REGISTRY_SNAPSHOT_HOST}") {
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}snapshot/""", returnStdout: false
+                    docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
                         container.push("${env.APP_VERSION}")
                         container.push("${commit}")
                         container.push("latest")
@@ -170,7 +169,7 @@ pipeline {
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
                         gcloud run deploy ${_name} \
-                            --image ${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION} \
+                            --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
                             --concurrency 10 \
@@ -243,7 +242,7 @@ pipeline {
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
                         gcloud run deploy ${_name} \
-                            --image ${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION} \
+                            --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
                             --concurrency 10 \
@@ -293,8 +292,8 @@ pipeline {
         stage('Release Registry') {
             steps {
                 script {
-                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_RELEASE_HOST}""", returnStdout: false
-                    docker.withRegistry("https://${env.REGISTRY_RELEASE_HOST}") {
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}release/""", returnStdout: false
+                    docker.withRegistry("https://${env.REGISTRY_HOST}release/") {
                         container.push("${env.APP_VERSION}")
                         container.push("${commit}")
                         container.push("latest")
@@ -334,7 +333,7 @@ pipeline {
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
                         gcloud run deploy ${_name} \
-                            --image ${env.REGISTRY_HOST}${env.APP_NAME}:${env.APP_VERSION} \
+                            --image ${env.REGISTRY_HOST}release/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
                             --concurrency 10 \
