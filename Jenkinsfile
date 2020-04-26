@@ -44,9 +44,8 @@ pipeline {
             post {
                 success {
                     script {
-                        slack = slackSend(message: "Here is the primary message")
-                        slackSend(channel: slack?.threadId, message: "Thread reply #1")
-                        slackSend(channel: slack?.threadId, message: "Thread reply #2")
+                        slack = slackSend(message: "Iniciando uma nova entrega")
+                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso")
                     }
                 }
                 failure {
@@ -64,6 +63,11 @@ pipeline {
                 stash includes: 'vendor/**/*', name: 'restoreSources'
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Dependencies Restore: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao executar o restauração de dependencias :('
                 }
@@ -87,6 +91,11 @@ pipeline {
                 stash includes: '**/*', name: 'testSources'
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Testing: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao executar os testes :('
                 }
@@ -122,6 +131,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Quality Gate: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao executar a revisão de código e cobertura de testes :('
                 }
@@ -137,6 +151,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Container Build: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao executar a construção do container :('
                 }
@@ -155,6 +174,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Snapshot Registry: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao registrar o container :('
                 }
@@ -204,6 +228,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Development Deploy: finalizado com sucesso. Url: ${url.dev}")
+                    }
+                }
                 failure {
                     echo 'Falha ao realizar o deploy :('
                 }
@@ -218,6 +247,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Validate Development: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao realizar o deploy :('
                 }
@@ -227,6 +261,10 @@ pipeline {
         stage('Approval Homologation Deploy') {
             steps {
                 script {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de homologação.")
+                    }
+                
                     timeout(time: 2, unit: 'HOURS') {
                         input message: 'Approve Deploy on Homologation?', ok: 'Yes'
                     }
@@ -277,6 +315,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Homologation Deploy: finalizado com sucesso. Url: ${url.uat}")
+                    }
+                }
                 failure {
                     echo 'Falha ao realizar o deploy :('
                 }
@@ -291,6 +334,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Validate Homologation: finalizado com sucesso")
+                    }
+                }
                 failure {
                     echo 'Falha ao realizar o deploy :('
                 }
@@ -322,6 +370,9 @@ pipeline {
         stage('Approval Production Deploy') {
             steps {
                 script {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de produção.")
+                    }
                     timeout(time: 2, unit: 'HOURS') {
                         input message: 'Approve Deploy on Production?', ok: 'Yes'
                     }
@@ -372,6 +423,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Production Deploy: finalizado com sucesso. Url: ${url.prd}")
+                    }
+                }
                 failure {
                     echo 'Falha ao realizar o deploy :('
                 }
@@ -386,6 +442,11 @@ pipeline {
                 }
             }
             post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Validate Production: finalizado com sucesso.")
+                    }
+                }
                 failure {
                     echo 'Falha ao realizar o deploy :('
                 }
