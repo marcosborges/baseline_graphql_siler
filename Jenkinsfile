@@ -45,8 +45,8 @@ pipeline {
                 success {
                     script {
                         slack = slackSend(message: "Here is the primary message")
-                        //slackSend(channel: slackResponse.threadId, message: "Thread reply #1")
-                        //slackSend(channel: slackResponse.threadId, message: "Thread reply #2")
+                        slackSend(channel: slack.threadId, message: "Thread reply #1")
+                        slackSend(channel: slack.threadId, message: "Thread reply #2")
                     }
                 }
                 failure {
