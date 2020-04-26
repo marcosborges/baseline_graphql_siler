@@ -62,7 +62,7 @@ pipeline {
             }
         }
 
-        stage('Unit Test') {
+        stage('Testing') {
             agent {
                 dockerfile { 
                     filename 'Dockerfile'
