@@ -1,7 +1,11 @@
 def container
 def commit
 def commitChangeset
-def url
+def url = [
+    dev : "",
+    uat : "",
+    prd : "",
+]
 
 pipeline {
 
@@ -19,7 +23,8 @@ pipeline {
         APP_VERSION = readJSON(file: 'composer.json').version.trim()
         SONAR_PROJECT_KEY = "marcosborges_baseline_graphql_siler"
         SONAR_ORGANIZATION_KEY = "baseline-graphql-siler"
-        REGISTRY_HOST = credentials('REGISTRY_HOST')
+        REGISTRY_SNAPSHOT_HOST = credentials('REGISTRY_HOST') + "/snapshot"
+        REGISTRY_RELEASE_HOST = credentials('REGISTRY_HOST') + "/release"
         GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SERVICE_ACCOUNT')
         GOOGLE_REGION = "us-east1"
         GOOGLE_ZONE = "us-east1-a"
@@ -27,7 +32,7 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Sources') {
             steps {
                 //checkout scm
                 script {
@@ -43,7 +48,7 @@ pipeline {
             }
         }
 
-        stage('Restore') {
+        stage('Dependencies Restore') {
             agent {
                 docker { image 'phpswoole/swoole' }
             }
@@ -58,7 +63,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Unit Test') {
             agent {
                 dockerfile { 
                     filename 'Dockerfile'
@@ -81,7 +86,7 @@ pipeline {
             }
         }
 
-        stage('Review') {
+        stage('Quality Gate') {
             steps {
                 unstash 'checkoutSources'
                 unstash 'restoreSources'
@@ -116,11 +121,11 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Container Build') {
             steps {
                 script {
                     unstash 'restoreSources'
-                    container = docker.build("${env.REGISTRY_HOST}${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
+                    container = docker.build("${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
                 }
             }
             post {
@@ -130,11 +135,11 @@ pipeline {
             }
         }
 
-        stage('Registry') {
+        stage('Snapshot Registry') {
             steps {
                 script {
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
-                    docker.withRegistry("https://${env.REGISTRY_HOST}") {
+                    docker.withRegistry("https://${env.REGISTRY_SNAPSHOT_HOST}") {
                         container.push("${env.APP_VERSION}")
                         container.push("${commit}")
                         container.push("latest")
@@ -148,17 +153,7 @@ pipeline {
             }
         }  
 
-        stage('Approval') {
-            steps {
-                script {
-                    timeout(time: 2, unit: 'HOURS') {
-                        input message: 'Approve Deploy?', ok: 'Yes'
-                    }
-                }
-            }
-        }
-                
-        stage('Deploy') {
+        stage('Development Deploy') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -167,7 +162,166 @@ pipeline {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
-                    def _name = env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')
+                    def _name = "dev-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
+                    sh """
+                        export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
+                        gcloud config set project ${data.project_id}
+                        gcloud config set compute/zone ${env.GOOGLE_ZONE}
+                        gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
+                        gcloud run deploy ${_name} \
+                            --image ${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION} \
+                            --platform managed \
+                            --memory 2Gi \
+                            --concurrency 10 \
+                            --timeout 1m20s \
+                            --max-instances 2 \
+                            --cpu 1000m \
+                            --port 9501 \
+                            --labels "name=${_name}" \
+                            --region ${env.GOOGLE_REGION} \
+                            --allow-unauthenticated \
+                            --set-env-vars "APP_ENV=development"
+                    """
+                    
+                    def service = readJSON(text: sh(script: """
+                        gcloud run services describe ${_name} \
+                            --platform managed \
+                            --region ${env.GOOGLE_REGION} \
+                            --format json
+                        """, returnStdout : true).trim()
+                    )
+
+                    url.dev = service.status.address.url
+
+                }
+            }
+            post {
+                failure {
+                    echo 'Falha ao realizar o deploy :('
+                }
+            }
+        }
+
+        stage('Validate Development') {
+            steps {
+                script {
+                    sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
+                    echo "Aplicação publicada cm sucesso: ${url.dev}" 
+                }
+            }
+            post {
+                failure {
+                    echo 'Falha ao realizar o deploy :('
+                }
+            }
+        }
+
+        stage('Approval Homologation') {
+            steps {
+                script {
+                    timeout(time: 2, unit: 'HOURS') {
+                        input message: 'Approve Deploy?', ok: 'Yes'
+                    }
+                }
+            }
+        }
+
+        stage('Homologation Deploy') {
+            when {
+                expression {
+                    currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+                }
+            }
+            steps {
+                script {
+                    def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
+                    def _name = "uat-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
+                    sh """
+                        export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
+                        gcloud config set project ${data.project_id}
+                        gcloud config set compute/zone ${env.GOOGLE_ZONE}
+                        gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
+                        gcloud run deploy ${_name} \
+                            --image ${env.REGISTRY_SNAPSHOT_HOST}${env.APP_NAME}:${env.APP_VERSION} \
+                            --platform managed \
+                            --memory 2Gi \
+                            --concurrency 10 \
+                            --timeout 1m20s \
+                            --max-instances 2 \
+                            --cpu 1000m \
+                            --port 9501 \
+                            --labels "name=${_name}" \
+                            --region ${env.GOOGLE_REGION} \
+                            --allow-unauthenticated \
+                            --set-env-vars "APP_ENV=development"
+                    """
+                    
+                    def service = readJSON(text: sh(script: """
+                        gcloud run services describe ${_name} \
+                            --platform managed \
+                            --region ${env.GOOGLE_REGION} \
+                            --format json
+                        """, returnStdout : true).trim()
+                    )
+
+                    url.uat = service.status.address.url
+
+                }
+            }
+            post {
+                failure {
+                    echo 'Falha ao realizar o deploy :('
+                }
+            }
+        }
+
+        stage('Validate Homologation') {
+            steps {
+                script {
+                    sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.uat}/graphql """
+                    echo "Aplicação publicada cm sucesso: ${url.uat}" 
+                }
+            }
+            post {
+                failure {
+                    echo 'Falha ao realizar o deploy :('
+                }
+            }
+        }
+        
+        stage('Release Registry') {
+            steps {
+                script {
+                    echo "Aplicação publicada cm sucesso: ${url.uat}" 
+                }
+            }
+            post {
+                failure {
+                    echo 'Falha ao realizar o deploy :('
+                }
+            }
+        }
+
+        stage('Approval Production') {
+            steps {
+                script {
+                    timeout(time: 2, unit: 'HOURS') {
+                        input message: 'Approve Deploy?', ok: 'Yes'
+                    }
+                }
+            }
+        }
+
+        stage('Production Deploy') {
+            when {
+                expression {
+                    currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+                }
+            }
+            steps {
+                script {
+                    def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
+                    def _name = "prd-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${data.project_id}
@@ -196,7 +350,7 @@ pipeline {
                         """, returnStdout : true).trim()
                     )
 
-                    url = service.status.address.url
+                    url.prd = service.status.address.url
 
                 }
             }
@@ -207,11 +361,11 @@ pipeline {
             }
         }
 
-        stage('Validate') {
+        stage('Validate Production') {
             steps {
                 script {
-                    sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url}/graphql """
-                    echo "Aplicação publicada cm sucesso: ${url}" 
+                    sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.prd}/graphql """
+                    echo "Aplicação publicada cm sucesso: ${url.prd}" 
                 }
             }
             post {
@@ -220,10 +374,10 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
+
         success {
             echo 'The Pipeline success :)'
             
@@ -261,5 +415,4 @@ pipeline {
             echo 'The Pipeline failed :('
         }
     }
-    
 }
