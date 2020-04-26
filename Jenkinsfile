@@ -216,7 +216,7 @@ pipeline {
             }
         }
 
-        stage('Approval Homologation') {
+        stage('Approval Homologation Deploy') {
             steps {
                 script {
                     timeout(time: 2, unit: 'HOURS') {
@@ -307,7 +307,7 @@ pipeline {
             }
         }
 
-        stage('Approval Production') {
+        stage('Approval Production Deploy') {
             steps {
                 script {
                     timeout(time: 2, unit: 'HOURS') {
