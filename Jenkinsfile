@@ -138,7 +138,7 @@ pipeline {
         stage('Snapshot Registry') {
             steps {
                 script {
-                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}snapshot/""", returnStdout: false
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
                     docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
                         container.push("${env.APP_VERSION}")
                         container.push("${commit}")
@@ -292,12 +292,14 @@ pipeline {
         stage('Release Registry') {
             steps {
                 script {
-                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}release/""", returnStdout: false
-                    app.wfs.sh("docker pull ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}")
-                    app.wfs.sh("docker tag  ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} ${env.REGISTRY_HOST}release/${env.APP_NAME}:${env.APP_VERSION}")
-                    app.wfs.sh("docker push ${env.REGISTRY_HOST}release/${env.APP_NAME}:${env.APP_VERSION}")
-                    app.wfs.sh("docker push ${env.REGISTRY_HOST}release/${env.APP_NAME}:latest")
-                    app.wfs.sh("docker push ${env.REGISTRY_HOST}release/${env.APP_NAME}:${commit}")
+                    def _snapshot = """${env.REGISTRY_HOST}snapshot/${env.APP_NAME}"""
+                    def _release = """${env.REGISTRY_HOST}release/${env.APP_NAME}"""
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
+                    app.wfs.sh("docker pull ${_snapshot}:${env.APP_VERSION}")
+                    app.wfs.sh("docker tag  ${_snapshot}:${env.APP_VERSION} :${env.APP_VERSION}")
+                    app.wfs.sh("docker push ${_release}:${env.APP_VERSION}")
+                    app.wfs.sh("docker push ${_release}:latest")
+                    app.wfs.sh("docker push ${_release}:${commit}")
                 }
             }
             post {
