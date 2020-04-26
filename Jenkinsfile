@@ -258,7 +258,7 @@ pipeline {
             }
         }
 
-        stage('Approval Homologation Deploy') {
+        /*stage('Approval Homologation Deploy') {
             steps {
                 script {
                     script {
@@ -270,7 +270,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage('Homologation Deploy') {
             when {
@@ -367,7 +367,7 @@ pipeline {
             }
         }
 
-        stage('Approval Production Deploy') {
+        /*stage('Approval Production Deploy') {
             steps {
                 script {
                     script {
@@ -378,7 +378,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage('Production Deploy') {
             when {
