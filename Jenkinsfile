@@ -239,7 +239,7 @@ pipeline {
             }
         }
 
-        stage('Validate Development') {
+        stage('Development Validation') {
 
             agent {
                 docker { image 'postman/newman' }
@@ -343,7 +343,7 @@ pipeline {
             }
         }
 
-        stage('Validate Homologation') {
+        stage('Homologation Validation') {
             steps {
                 script {
                     sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.uat}/graphql """
@@ -466,7 +466,7 @@ pipeline {
             }
         }
 
-        stage('Validate Production') {
+        stage('Production Validation') {
             steps {
                 script {
                     sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.prd}/graphql """
