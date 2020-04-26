@@ -23,8 +23,8 @@ pipeline {
         APP_VERSION = readJSON(file: 'composer.json').version.trim()
         SONAR_PROJECT_KEY = "marcosborges_baseline_graphql_siler"
         SONAR_ORGANIZATION_KEY = "baseline-graphql-siler"
-        REGISTRY_SNAPSHOT_HOST = credentials('REGISTRY_HOST') + "/snapshot"
-        REGISTRY_RELEASE_HOST = credentials('REGISTRY_HOST') + "/release"
+        REGISTRY_SNAPSHOT_HOST = "${credentials('REGISTRY_HOST')}/snapshot"
+        REGISTRY_RELEASE_HOST = "${credentials('REGISTRY_HOST')}/release"
         GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SERVICE_ACCOUNT')
         GOOGLE_REGION = "us-east1"
         GOOGLE_ZONE = "us-east1-a"
