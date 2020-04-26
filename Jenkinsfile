@@ -220,7 +220,7 @@ pipeline {
             steps {
                 script {
                     timeout(time: 2, unit: 'HOURS') {
-                        input message: 'Approve Deploy?', ok: 'Yes'
+                        input message: 'Approve Deploy on Homologation?', ok: 'Yes'
                     }
                 }
             }
@@ -293,11 +293,11 @@ pipeline {
             steps {
                 script {
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}release/""", returnStdout: false
-                    docker.withRegistry("https://${env.REGISTRY_HOST}release/") {
-                        container.push("${env.APP_VERSION}")
-                        container.push("${commit}")
-                        container.push("latest")
-                    }
+                    app.wfs.sh("docker pull ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}")
+                    app.wfs.sh("docker tag  ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} ${env.REGISTRY_HOST}release/${env.APP_NAME}:${env.APP_VERSION}")
+                    app.wfs.sh("docker push ${env.REGISTRY_HOST}release/${env.APP_NAME}:${env.APP_VERSION}")
+                    app.wfs.sh("docker push ${env.REGISTRY_HOST}release/${env.APP_NAME}:latest")
+                    app.wfs.sh("docker push ${env.REGISTRY_HOST}release/${env.APP_NAME}:${commit}")
                 }
             }
             post {
@@ -311,7 +311,7 @@ pipeline {
             steps {
                 script {
                     timeout(time: 2, unit: 'HOURS') {
-                        input message: 'Approve Deploy?', ok: 'Yes'
+                        input message: 'Approve Deploy on Production?', ok: 'Yes'
                     }
                 }
             }
