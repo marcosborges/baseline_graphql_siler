@@ -296,7 +296,7 @@ pipeline {
                     def _release = """${env.REGISTRY_HOST}release/${env.APP_NAME}"""
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
                     sh("docker pull ${_snapshot}:${env.APP_VERSION}")
-                    sh("docker tag  ${_snapshot}:${env.APP_VERSION}:${env.APP_VERSION}")
+                    sh("docker tag  ${_snapshot}:${env.APP_VERSION}")
                     sh("docker push ${_release}:${env.APP_VERSION}")
                     sh("docker push ${_release}:latest")
                     sh("docker push ${_release}:${commit}")
