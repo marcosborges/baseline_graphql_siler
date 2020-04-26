@@ -85,8 +85,8 @@ pipeline {
                 unstash 'restoreSources'
                 sh " composer test "
                 sh """
-                    sed -i 's|${pwd()}/||' ${pwd()}/tests/_reports/logs/clover.xml 
-                    sed -i 's|${pwd()}/||' ${pwd()}/tests/_reports/logs/junit.xml
+                    sed -i 's|${pwd()}/||' ${pwd()}/tests/unit/_reports/logs/clover.xml 
+                    sed -i 's|${pwd()}/||' ${pwd()}/tests/unit/_reports/logs/junit.xml
                 """
                 stash includes: '**/*', name: 'testSources'
             }
@@ -121,8 +121,8 @@ pipeline {
                                 -Dsonar.tests="tests" \
                                 -Dsonar.language="php" \
                                 -Dsonar.sourceEncoding="UTF-8" \
-                                -Dsonar.php.coverage.reportPaths=tests/_reports/logs/clover.xml \
-                                -Dsonar.php.tests.reportPath=tests/_reports/logs/junit.xml \
+                                -Dsonar.php.coverage.reportPaths=tests/unit/_reports/logs/clover.xml \
+                                -Dsonar.php.tests.reportPath=tests/unit/_reports/logs/junit.xml \
                         """
                     }
                 }
@@ -240,10 +240,27 @@ pipeline {
         }
 
         stage('Validate Development') {
+
+            agent {
+                docker { image 'postman/newman' }
+            }
+            
             steps {
+                unstash 'checkoutSources'
                 script {
+
                     sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
                     echo "Aplicação publicada cm sucesso: ${url.dev}" 
+                    sh """
+                        /etc/newman run \
+                            tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                -e tests/smoke/postman_environment.json \
+                                -r cli,json,junit \
+                                --reporter-junit-export="tests/smoke/_report/newman-report.xml" \
+                                --insecure \
+                                --color on \
+                                --disable-unicode 
+                    """
                 }
             }
             post {
@@ -332,6 +349,21 @@ pipeline {
                     sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.uat}/graphql """
                     echo "Aplicação publicada cm sucesso: ${url.uat}" 
                 }
+                /*
+                docker.image('blazemeter/taurus').inside (""" -u 0:0 --net=host --entrypoint='' -v ${javaHome}:${javaHome} -v ${app.workspace}:/bzt """) {
+                    sh """  
+                        pip3 install Faker \
+                        cd /bzt/taurus && \
+                        chmod +x /bzt/taurus/seeder.py && \
+                        ./seeder.py > data.csv && \
+                        bzt *.yml \
+                        --quiet \
+                            -o modules.console.disable=true \
+                            -o settings.verbose=false \
+                            -o settings.env.HOSTNAME="${url.uat}" \
+                    """
+                }
+                */
             }
             post {
                 success {

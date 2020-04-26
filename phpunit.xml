@@ -6,7 +6,7 @@
     colors="true">
     <testsuites>
         <testsuite name="Unit">
-            <directory>tests/</directory>
+            <directory>tests/unit/</directory>
         </testsuite>
     </testsuites>
     <filter>
@@ -15,10 +15,10 @@
         </whitelist>
     </filter>
     <logging> 
-        <log type="coverage-html" target="tests/_reports/coverage" lowUpperBound="35" highLowerBound="70" /> 
-        <log type="testdox-text" target="tests/_reports/testdox/executed.txt"/> 
-        <log type="coverage-clover" target="tests/_reports/logs/clover.xml"/> 
-        <log type="junit" target="tests/_reports/logs/junit.xml"/> 
+        <log type="coverage-html" target="tests/_reports/unit/coverage" lowUpperBound="35" highLowerBound="70" /> 
+        <log type="testdox-text" target="tests/_reports/unit/testdox/executed.txt"/> 
+        <log type="coverage-clover" target="tests/_reports/unit/logs/clover.xml"/> 
+        <log type="junit" target="tests/_reports/unit/logs/junit.xml"/> 
     </logging>
    
 </phpunit>

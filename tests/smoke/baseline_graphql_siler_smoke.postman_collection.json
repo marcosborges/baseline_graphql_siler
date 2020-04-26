@@ -1,0 +1,34 @@
+{
+	"info": {
+		"_postman_id": "f8f1e249-461d-4cf8-9bab-3f612b669429",
+		"name": "baseline_graphql_siler",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "smoke-test",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query {\n  helloWorld\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{hostname}}/graphql",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
