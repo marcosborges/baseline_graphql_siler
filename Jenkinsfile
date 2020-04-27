@@ -304,6 +304,7 @@ pipeline {
                         unstash 'checkoutSources'
                         script {
                             sh """  
+                                pip install bzt
                                 pwd
                                 ls -lah
                                 df -h
