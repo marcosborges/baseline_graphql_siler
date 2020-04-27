@@ -51,7 +51,7 @@ pipeline {
                             "*App:* ${env.APP_NAME}\n" +
                             "*Version:* ${env.APP_VERSION}\n" +
                             "*Commit:* ${commit}\n" +
-                            "*User:* ${env.CHANGE_AUTHOR_DISPLAY_NAME}\n" +
+                            "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).userName}\n" +
                             "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                             "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
 
