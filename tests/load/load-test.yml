@@ -1,0 +1,50 @@
+execution:
+- concurrency: 120
+  ramp-up: 10s
+  hold-for: 30s
+  scenario: quick-test
+
+scenarios:
+  quick-test:
+    requests:
+    - url : ${HOSTNAME}/graphsql
+      method: POST
+      headers:
+        Content-Type: application/json
+      body:
+        query: "query {helloWorld}"
+      label: 'POST HelloWorld'
+      follow-redirects: true 
+      assert:
+      - contains:
+        - 200
+        subject: http-code
+      assert-jsonpath:
+      - jsonpath: $.data.helloWorld
+        validate: true
+        expected-value: "Hello, World!"  
+
+
+settings:
+  artifacts-dir: ./tmp/%H%M%S # path where to save artifacts, default is %Y-%m-%d_%H-%M-%S.%f
+  aggregator: consolidator
+  check-interval: 1
+  verbose: true  # whenever you run bzt with -v option, it sets debug=true, 
+                  # some modules might use it for debug features,
+                  # setting this through config also switches CLI verbosity
+    
+provisioning: local
+
+reporting:
+- module: final-stats
+  summary: true  # overall samples count and percent of failures
+  summary-labels: true
+  percentiles: true  # display average times and percentiles
+  failed-labels: true  # provides list of sample labels with failures
+  test-duration: true  # provides test duration
+  dump-csv: ./taurus.csv
+  dump-xml: ./taurus.xml
+#- module: console
+- module: passfail
+  criteria:
+  - avg-rt of POST HelloWorld>150ms for 10s, stop as failed

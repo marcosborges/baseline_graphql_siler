@@ -266,9 +266,7 @@ pipeline {
             steps {
                 unstash 'checkoutSources'
                 script {
-
                     
-
                     def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                     for ( pe in _newmanEnv.values ) {
                         if ( pe.key == "hostname" ) {
@@ -284,12 +282,7 @@ pipeline {
                         )
                     )
 
-
-                    echo "Aplicação publicada com sucesso: ${url.dev}" 
                     sh """
-                        pwd
-                        ls -lah
-                        df -h
                         newman run \
                             ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
                                 -e ${pwd()}/tests/smoke/dev-environment.json \
@@ -299,11 +292,14 @@ pipeline {
                                 --color on \
                                 --disable-unicode 
                     """
+
+                    
                 }
             }
             post {
                 success {
                     script {
+                        echo "Aplicação publicada e validada com sucesso em desenvolvimento: ${url.dev}" 
                         slackSend(channel: slack?.threadId, message: "Validate Development: finalizado com sucesso")
                     }
                 }
@@ -411,9 +407,6 @@ pipeline {
 
                             echo "Aplicação publicada com sucesso: ${url.uat}" 
                             sh """
-                                pwd
-                                ls -lah
-                                df -h
                                 newman run \
                                     ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
                                         -e ${pwd()}/tests/smoke/uat-environment.json \
