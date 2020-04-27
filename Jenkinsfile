@@ -53,7 +53,7 @@ pipeline {
                     script {
                         slack = slackSend(
                             message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
-                            "*User:* ${currentBuild.displayName}"
+                            "*User:* ${currentBuild.displayName}\n" +
                             "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                             "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
 
