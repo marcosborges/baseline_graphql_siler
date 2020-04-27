@@ -275,7 +275,7 @@ pipeline {
                             pe.value = url.dev
                         }
                     }
-                    echo _newmanEnv
+
                     new File(
                         "${pwd()}/tests/smoke/dev-environment.json"
                     ).write(
