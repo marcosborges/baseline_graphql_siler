@@ -254,6 +254,9 @@ pipeline {
                     //sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
                     echo "Aplicação publicada com sucesso: ${url.dev}" 
                     sh """
+                        pwd
+                        ls -lah
+                        df -h
                         /etc/newman run \
                             tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
                                 -e tests/smoke/postman_environment.json \
