@@ -242,7 +242,10 @@ pipeline {
         stage('Development Validation') {
 
             agent {
-                docker { image 'postman/newman' }
+                docker { 
+                    image 'postman/newman',
+                    entrypoint ''
+                }
             }
             
             steps {
