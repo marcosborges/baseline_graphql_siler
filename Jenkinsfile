@@ -297,15 +297,15 @@ pipeline {
                     agent {
                         docker { 
                             image 'blazemeter/taurus'
-                            args  "--entrypoint=''"
+                            args  "--entrypoint='' -v ${pwd()}:/bzt"
                         }
                     }
                     
                     steps {
                         unstash 'checkoutSources'
                         script {
+                            //pip install bzt
                             sh """  
-                                pip install bzt
                                 pwd
                                 ls -lah
                                 df -h
