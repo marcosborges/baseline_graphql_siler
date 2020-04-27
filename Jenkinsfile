@@ -252,16 +252,29 @@ pipeline {
                 script {
 
                     //sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
+
+                    def _newmanEnv = readJSON file: "tests/smoke/environment.json"
+                    for ( pe in _newmanEnv.values ) {
+                        if ( pe.key == "host" ) {
+                            pe.value = url
+                        }
+                    }
+                    Files.write(
+                        "tests/smoke/environment.json", 
+                        Json.stringify(_postmanEnvironments)
+                    )
+
+
                     echo "Aplicação publicada com sucesso: ${url.dev}" 
                     sh """
                         pwd
                         ls -lah
                         df -h
                         newman run \
-                            tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
-                                -e tests/smoke/postman_environment.json \
+                            ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                -e ${pwd()}/tests/smoke/postman_environment.json \
                                 -r cli,json,junit \
-                                --reporter-junit-export="tests/smoke/_report/newman-report.xml" \
+                                --reporter-junit-export="${pwd()}/tests/smoke/_report/newman-report.xml" \
                                 --insecure \
                                 --color on \
                                 --disable-unicode 
