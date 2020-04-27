@@ -256,6 +256,11 @@ pipeline {
 
         stage('Development Validation') {
 
+            /*
+            steps {
+                ssh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
+            }*/
+
             agent {
                 docker { 
                     image 'postman/newman'
@@ -267,7 +272,7 @@ pipeline {
                 unstash 'checkoutSources'
                 script {
 
-                    //sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
+                    
 
                     def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                     for ( pe in _newmanEnv.values ) {
