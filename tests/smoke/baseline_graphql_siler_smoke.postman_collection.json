@@ -7,6 +7,26 @@
 	"item": [
 		{
 			"name": "smoke-test",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "330256dc-0bbf-4818-aab3-8841240e8482",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Validate response body\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.eql({",
+							"        \"helloWorld\": \"Hello, World!\"",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],

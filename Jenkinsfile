@@ -397,7 +397,7 @@ pipeline {
                             def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.dev}".toString()
+                                    pe.value = "${url.uat}".toString()
                                 }
                             }
 
