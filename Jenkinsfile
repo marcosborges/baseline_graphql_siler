@@ -222,7 +222,7 @@ pipeline {
                             --labels "name=${_name}" \
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
-                            --revision-suffix "${env.APP_VERSION}-${commit}" \
+                            --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
                             --set-env-vars "APP_ENV=development"
                     """
                     
@@ -373,7 +373,7 @@ pipeline {
                             --labels "name=${_name}" \
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
-                            --revision-suffix "${env.APP_VERSION}-${commit}" \
+                            --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
                             --set-env-vars "APP_ENV=development"
                     """
                     
@@ -537,7 +537,7 @@ pipeline {
                             --labels "name=${_name}" \
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
-                            --revision-suffix "${env.APP_VERSION}-${commit}" \
+                            --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
                             --set-env-vars "APP_ENV=development"
                     """
                     
