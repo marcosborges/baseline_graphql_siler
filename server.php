@@ -10,7 +10,7 @@ global $schema, $root_value, $context;
 
 $handler = graphql_handler($schema, $root_value, $context);
 $server = function () use ($handler): void {
-    Route\get('/health', λ\puts('{"status":"ok"}'));
+    //Route\get('/health', λ\puts('{"status":"ok"}'));
     Route\post('/graphql', $handler);
 };
 
