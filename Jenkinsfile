@@ -8,6 +8,10 @@ def url = [
 ]
 def slack
 
+
+
+
+
 pipeline {
 
     agent any
@@ -44,7 +48,11 @@ pipeline {
             post {
                 success {
                     script {
-                        slack = slackSend(message: "Iniciando uma nova entrega")
+                        slack = slackSend(
+                            message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
+                            "${env.JOB_NAME} (${env.JOB_URL})\n" +
+                            "${env.BUILD_ID} (${env.BUILD_URL})\n"
+                        )
                         slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso")
                     }
                 }
