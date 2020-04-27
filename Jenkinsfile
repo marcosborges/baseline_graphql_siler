@@ -387,26 +387,69 @@ pipeline {
         }
 
         stage('Homologation Validation') {
-            steps {
-                script {
-                    sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.uat}/graphql """
-                    echo "Aplicação publicada cm sucesso: ${url.uat}" 
+            
+            agent {
+                docker { 
+                    image 'postman/newman'
+                    args  "--entrypoint=''"
                 }
-                /*
-                docker.image('blazemeter/taurus').inside (""" -u 0:0 --net=host --entrypoint='' -v ${javaHome}:${javaHome} -v ${app.workspace}:/bzt """) {
+            }
+            
+            steps {
+                unstash 'checkoutSources'
+                script {
+
+                    def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
+                    for ( pe in _newmanEnv.values ) {
+                        if ( pe.key == "hostname" ) {
+                            pe.value = "${url.dev}".toString()
+                        }
+                    }
+
+                    new File(
+                        "${pwd()}/tests/smoke/uat-environment.json"
+                    ).write(
+                        JsonOutput.toJson(
+                            _newmanEnv
+                        )
+                    )
+
+                    echo "Aplicação publicada com sucesso: ${url.uat}" 
+                    sh """
+                        pwd
+                        ls -lah
+                        df -h
+                        newman run \
+                            ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                -e ${pwd()}/tests/smoke/uat-environment.json \
+                                -r cli,json,junit \
+                                --reporter-junit-export="${pwd()}/tests/smoke/_report/uat-newman-report.xml" \
+                                --insecure \
+                                --color on \
+                                --disable-unicode 
+                    """
+                }
+            }
+
+            agent {
+                docker { 
+                    image 'blazemeter/taurus'
+                    args  "--entrypoint=''"
+                }
+            }
+            
+            steps {
+                unstash 'checkoutSources'
+                script {
                     sh """  
                         pip3 install Faker \
-                        cd /bzt/taurus && \
-                        chmod +x /bzt/taurus/seeder.py && \
-                        ./seeder.py > data.csv && \
-                        bzt *.yml \
+                        bzt ${pwd()}/tests/load/*.yml \
                         --quiet \
                             -o modules.console.disable=true \
                             -o settings.verbose=false \
-                            -o settings.env.HOSTNAME="${url.uat}" \
+                            -o settings.env.HOSTNAME="${url.uat}"
                     """
                 }
-                */
             }
             post {
                 success {
