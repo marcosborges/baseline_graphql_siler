@@ -58,7 +58,7 @@ pipeline {
                             "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
 
                         )
-                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets.join('\n')}")
+                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets}")
                     }
                 }
                 failure {
@@ -266,14 +266,14 @@ pipeline {
 
                     //sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.dev}/graphql """
 
-                    def _newmanEnv = readJSON file: "tests/smoke/environment.json"
+                    def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                     for ( pe in _newmanEnv.values ) {
                         if ( pe.key == "host" ) {
                             pe.value = url
                         }
                     }
                     new File(
-                        "tests/smoke/environment.json"
+                        "${pwd()}/tests/smoke/environment.json"
                         ).write(
                             JsonOutput.toJson(
                                 _newmanEnv
