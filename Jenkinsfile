@@ -61,7 +61,7 @@ pipeline {
                             "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
 
                         )
-                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets}")
+                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets.join('\n')}")
                     }
                 }
                 failure {
