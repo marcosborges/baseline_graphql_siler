@@ -431,9 +431,8 @@ pipeline {
                         unstash 'checkoutSources'
                         script {
                             sh """  
-                                pip3 install Faker \
                                 bzt ${pwd()}/tests/load/*.yml \
-                                --quiet \
+                                    --quiet \
                                     -o modules.console.disable=true \
                                     -o settings.verbose=false \
                                     -o settings.env.HOSTNAME="${url.uat}"
