@@ -1,6 +1,5 @@
 import groovy.json.JsonOutput
 
-
 def container
 def commit
 def commitChangeset
@@ -10,10 +9,6 @@ def url = [
     prd : "",
 ]
 def slack
-
-
-
-
 
 pipeline {
 
