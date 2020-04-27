@@ -169,7 +169,6 @@ pipeline {
                     docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
                         container.push("${env.APP_VERSION}")
                         container.push("${commit}")
-                        container.push("latest")
                     }
                 }
             }
@@ -388,10 +387,8 @@ pipeline {
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
                     sh("docker pull ${_snapshot}:${env.APP_VERSION}")
                     sh("docker tag  ${_snapshot}:${env.APP_VERSION} ${_release}:${env.APP_VERSION}")
-                    sh("docker tag  ${_snapshot}:${env.APP_VERSION} ${_release}:latest")
                     sh("docker tag  ${_snapshot}:${env.APP_VERSION} ${_release}:${commit}")
                     sh("docker push ${_release}:${env.APP_VERSION}")
-                    sh("docker push ${_release}:latest")
                     sh("docker push ${_release}:${commit}")
                 }
             }
