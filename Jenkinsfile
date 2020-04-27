@@ -306,7 +306,7 @@ pipeline {
                             sh """  
                                 pwd
                                 ls -lah
-                                fd -h
+                                df -h
                                 bzt ${pwd()}/tests/load/load-test.yml \
                                     --quiet \
                                     -o modules.console.disable=true \
