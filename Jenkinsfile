@@ -304,7 +304,10 @@ pipeline {
                         unstash 'checkoutSources'
                         script {
                             sh """  
-                                /bzt/taurus/bzt ${pwd()}/tests/load/load-test.yml \
+                                pwd
+                                ls -lah
+                                fd -h
+                                bzt ${pwd()}/tests/load/load-test.yml \
                                     --quiet \
                                     -o modules.console.disable=true \
                                     -o settings.verbose=false \
