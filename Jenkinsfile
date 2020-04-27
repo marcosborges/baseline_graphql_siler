@@ -287,9 +287,9 @@ pipeline {
                         df -h
                         newman run \
                             ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
-                                -e ${pwd()}/tests/smoke/postman_environment.json \
+                                -e ${pwd()}/tests/smoke/environment.json \
                                 -r cli,json,junit \
-                                --reporter-junit-export="${pwd()}/tests/smoke/_report/newman-report.xml" \
+                                --reporter-junit-export="${pwd()}/tests/smoke/_report/dev-newman-report.xml" \
                                 --insecure \
                                 --color on \
                                 --disable-unicode 
