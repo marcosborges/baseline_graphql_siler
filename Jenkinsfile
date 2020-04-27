@@ -259,11 +259,13 @@ pipeline {
                             pe.value = url
                         }
                     }
-                    Files.write(
-                        "tests/smoke/environment.json", 
-                        Json.stringify(_postmanEnvironments)
-                    )
-
+                    new File(
+                        "tests/smoke/environment.json"
+                        ).write(
+                            JsonOutput.toJson(
+                                _postmanEnvironments
+                            )
+                        )
 
                     echo "Aplicação publicada com sucesso: ${url.dev}" 
                     sh """
