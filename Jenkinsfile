@@ -144,7 +144,7 @@ pipeline {
             post {
                 success {
                     script {
-                        slackSend(channel: slack?.threadId, message: "Quality Gate: finalizado com sucesso")
+                        slackSend(channel: slack?.threadId, message: "Quality Gate: finalizado com sucesso. Link: https://sonarcloud.io/dashboard?id=marcosborges_baseline_graphql_siler")
                     }
                 }
                 failure {
