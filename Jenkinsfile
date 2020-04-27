@@ -276,7 +276,7 @@ pipeline {
                         "tests/smoke/environment.json"
                         ).write(
                             JsonOutput.toJson(
-                                _postmanEnvironments
+                                _newmanEnv
                             )
                         )
 
