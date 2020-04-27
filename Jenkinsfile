@@ -244,7 +244,7 @@ pipeline {
             agent {
                 docker { 
                     image 'postman/newman'
-                    entrypoint ''
+                    args  "--entrypoint=''"
                 }
             }
             
