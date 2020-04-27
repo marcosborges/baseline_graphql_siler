@@ -257,7 +257,7 @@ pipeline {
                         pwd
                         ls -lah
                         df -h
-                        /etc/newman run \
+                        newman run \
                             tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
                                 -e tests/smoke/postman_environment.json \
                                 -r cli,json,junit \
