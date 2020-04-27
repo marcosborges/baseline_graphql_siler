@@ -272,16 +272,18 @@ pipeline {
                     def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                     for ( pe in _newmanEnv.values ) {
                         if ( pe.key == "host" ) {
-                            pe.value = url
+                            pe.value = url.dev
                         }
                     }
+                    echo _newmanEnv
                     new File(
-                        "${pwd()}/tests/smoke/environment.json"
-                        ).write(
-                            JsonOutput.toJson(
-                                _newmanEnv
-                            )
+                        "${pwd()}/tests/smoke/dev-environment.json"
+                    ).write(
+                        JsonOutput.toJson(
+                            _newmanEnv
                         )
+                    )
+
 
                     echo "Aplicação publicada com sucesso: ${url.dev}" 
                     sh """
@@ -290,7 +292,7 @@ pipeline {
                         df -h
                         newman run \
                             ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
-                                -e ${pwd()}/tests/smoke/environment.json \
+                                -e ${pwd()}/tests/smoke/dev-environment.json \
                                 -r cli,json,junit \
                                 --reporter-junit-export="${pwd()}/tests/smoke/_report/dev-newman-report.xml" \
                                 --insecure \
