@@ -1,7 +1,7 @@
 execution:
-- concurrency: 20
+- concurrency: 15
   ramp-up: 10s
-  hold-for: 30s
+  hold-for: 20s
   scenario: quick-test
 
 scenarios:
