@@ -210,6 +210,10 @@ pipeline {
                         gcloud config set project ${data.project_id}
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
+                    """
+                    def _revisions = readJSON(text:sh(script: "gcloud run revisions list --service ${_name} -o json", returnStdout : true).trim())
+                    println _revisions
+                    sh """
                         gcloud run deploy ${_name} \
                             --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
