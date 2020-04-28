@@ -1,5 +1,5 @@
 execution:
-- concurrency: 5
+- concurrency: 2
   hold-for: 10s
   scenario: quick-test
 
