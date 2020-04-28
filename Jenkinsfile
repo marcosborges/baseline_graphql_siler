@@ -324,12 +324,13 @@ pipeline {
                                 df -h
                                 cd /bzt-configs
                                 bzt load-test.yml \
-                                    
+                                    --quiet \
+                                    --no-system-configs \
+                                    -o modules.console.disable=true \
+                                    -o settings.verbose=false \        
                                     -o settings.env.HOSTNAME="${url.dev}"
                             """
-                            /*--quiet \
-                                    -o modules.console.disable=true \
-                                    -o settings.verbose=false \*/
+                            
                         }
                     }
                 }
