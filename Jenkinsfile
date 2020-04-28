@@ -227,7 +227,7 @@ pipeline {
                             --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
-                            --concurrency 10 \
+                            --concurrency 100 \
                             --timeout 1m20s \
                             --max-instances 2 \
                             --cpu 1000m \
@@ -266,6 +266,33 @@ pipeline {
         stage('Development Validation') {
 
             parallel {
+                stage ("load") {
+                    agent {
+                        docker { 
+                            image 'blazemeter/taurus'
+                            args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
+                        }
+                    }
+                    
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
+                            //pip install bzt
+                            sh """  
+                                pwd
+                                ls -lah
+                                df -h
+                                cd /bzt-configs
+                                bzt load-test.yml \
+                                    -o settings.env.HOSTNAME="${url.dev}"
+                            """
+                            /*--quiet \
+                                    -o modules.console.disable=true \
+                                    -o settings.verbose=false \*/
+                            
+                        }
+                    }
+                }
                 stage("smoke") {
                     agent {
                         docker { 
@@ -306,33 +333,7 @@ pipeline {
                         }
                     }
                 }
-                stage ("load") {
-                    agent {
-                        docker { 
-                            image 'blazemeter/taurus'
-                            args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
-                        }
-                    }
-                    
-                    steps {
-                        unstash 'checkoutSources'
-                        script {
-                            //pip install bzt
-                            sh """  
-                                pwd
-                                ls -lah
-                                df -h
-                                cd /bzt-configs
-                                bzt load-test.yml \
-                                    -o settings.env.HOSTNAME="${url.dev}"
-                            """
-                            /*--quiet \
-                                    -o modules.console.disable=true \
-                                    -o settings.verbose=false \*/
-                            
-                        }
-                    }
-                }
+                
             }
             post {
                 always {
