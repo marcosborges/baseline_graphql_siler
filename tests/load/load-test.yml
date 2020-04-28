@@ -1,5 +1,5 @@
 execution:
-- concurrency: 15
+- concurrency: 10
   ramp-up: 10s
   hold-for: 20s
   scenario: quick-test
