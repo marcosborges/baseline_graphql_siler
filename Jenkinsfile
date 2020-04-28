@@ -227,9 +227,9 @@ pipeline {
                             --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
-                            --concurrency 100 \
+                            --concurrency 1000 \
                             --timeout 1m20s \
-                            --max-instances 2 \
+                            --max-instances 3 \
                             --cpu 1000m \
                             --port 9501 \
                             --labels "name=${_name}" \
