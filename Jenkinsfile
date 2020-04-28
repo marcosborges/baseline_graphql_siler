@@ -310,7 +310,7 @@ pipeline {
                     agent {
                         docker { 
                             image 'blazemeter/taurus'
-                            args  "--entrypoint='' -v /tmp/my-test:/bzt-configs "
+                            args  """--entrypoint='' -v "${pwd()}/tests/load:/bzt-config" """
                         }
                     }
                     
@@ -322,7 +322,8 @@ pipeline {
                                 pwd
                                 ls -lah
                                 df -h
-                                bzt ${pwd()}/tests/load/load-test.yml \
+                                cd /bzt-config
+                                bzt load-test.yml \
                                     --quiet \
                                     -o modules.console.disable=true \
                                     -o settings.verbose=false \
