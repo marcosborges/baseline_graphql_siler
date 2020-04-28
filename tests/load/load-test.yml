@@ -7,7 +7,7 @@ execution:
 scenarios:
   quick-test:
     requests:
-    - url : ${HOSTNAME}/graphsql
+    - url : ${HOSTNAME}/graphql
       method: POST
       headers:
         Content-Type: application/json
