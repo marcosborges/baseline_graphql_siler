@@ -269,11 +269,19 @@ pipeline {
             parallel {
                 stage ("load") {
                     agent {
+                        dockerfile { 
+                            filename 'LoadTest.Dockerfile'
+                            dir './',
+                            additionalBuildArgs  '--build-arg version=0.0.1'
+                            args "--entrypoint='' -v ${pwd()}/tests/load:/bzt-configs"
+                        }
+                    }
+                    /*agent {
                         docker { 
                             image 'blazemeter/taurus'
                             args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
                         }
-                    }
+                    }*/
                     
                     steps {
                         unstash 'checkoutSources'
