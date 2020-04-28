@@ -196,7 +196,11 @@ pipeline {
             }
         }
 
-        stage('Development Deploy') {
+        stage( 'AppConfig (DEV)') { }
+
+        stage( 'DB Migration (DEV)') { }
+
+        stage( 'Deploy (DEV)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -264,7 +268,7 @@ pipeline {
             }
         }
 
-        stage('Development Validation') {
+        stage( 'Validation (DEV)') {
 
             parallel {
                 stage ("load") {
@@ -375,7 +379,11 @@ pipeline {
             }
         }*/
 
-        stage('Homologation Deploy') {
+        stage('AppConfig (HOM)') { }
+
+        stage('DB Migration (HOM)') { }
+
+        stage('Deploy (HOM)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -430,7 +438,7 @@ pipeline {
             }
         }
 
-        stage('Homologation Validation') {
+        stage('Validation (HOM)') {
             parallel {
                 stage("smoke") {
                     agent {
@@ -539,7 +547,11 @@ pipeline {
             }
         }*/
 
-        stage('Production Deploy') {
+        stage('AppConfig (PRD)') { }
+
+        stage('DB Migration (PRD)') { }
+
+        stage('Deploy (PRD)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -594,7 +606,7 @@ pipeline {
             }
         }
 
-        stage('Production Validation') {
+        stage('Validation (PRD)') {
             steps {
                 script {
                     sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.prd}/graphql """
