@@ -211,7 +211,7 @@ pipeline {
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
                     """
-                    def _revisions = readJSON(text:sh(script: "gcloud run revisions list --service ${_name} -o json", returnStdout : true).trim())
+                    def _revisions = readJSON(text:sh(script: "gcloud run revisions list --service ${_name} --format json", returnStdout : true).trim())
                     println _revisions
                     sh """
                         gcloud run deploy ${_name} \
