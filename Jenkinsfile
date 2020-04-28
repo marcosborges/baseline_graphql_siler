@@ -335,6 +335,9 @@ pipeline {
                 }
             }
             post {
+                always {
+                    sh """ sudo chown ${env.JKS_USERID}:${env.JKS_GROUPID} ${pwd()} -R """
+                }
                 success {
                     script {
                         echo "Aplicação publicada e validada com sucesso em desenvolvimento: ${url.dev}" 
