@@ -47,4 +47,4 @@ reporting:
 #- module: console
 - module: passfail
   criteria:
-  - avg-rt of POST HelloWorld>150ms for 10s, stop as failed
+  - avg-rt of POST HelloWorld>650ms for 10s, stop as failed
