@@ -322,7 +322,7 @@ pipeline {
                                 pwd
                                 ls -lah
                                 df -h
-                                cd /bzt-config
+                                cd /bzt-configs
                                 bzt load-test.yml \
                                     
                                     -o settings.env.HOSTNAME="${url.dev}"
