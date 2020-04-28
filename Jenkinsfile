@@ -297,7 +297,7 @@ pipeline {
                     agent {
                         docker { 
                             image 'blazemeter/taurus'
-                            args  "--entrypoint='' -v ${pwd()}:/bzt"
+                            args  "--entrypoint='' -v /tmp/my-test:/bzt-configs "
                         }
                     }
                     
