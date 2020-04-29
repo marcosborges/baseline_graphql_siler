@@ -270,7 +270,6 @@ pipeline {
         }
 
         stage( 'Validation (DEV)' ) {
-
             parallel {
                 stage("healthz") {
                     steps {
@@ -391,7 +390,6 @@ pipeline {
                     }
                 }
             }                
-            
             post {
                 success {
                     script {
@@ -706,12 +704,55 @@ pipeline {
         }
 
         stage('Validation (PRD)') {
-            steps {
-                script {
-                    sh """ curl -X POST -H "Content-type: application/json" -d '{"query": "query{helloWorld}"}' ${url.prd}/graphql """
-                    echo "Aplicação publicada cm sucesso: ${url.prd}" 
+            parallel {
+                stage("healthz") {
+                    steps {
+                        script {
+                            sh """ curl -X GET -H "Content-type: application/json" ${url.prd}/health """ 
+                        }
+                    }
                 }
-            }
+                stage("smoke") {
+                    agent {
+                        docker { 
+                            image 'postman/newman'
+                            args  "--entrypoint=''"
+                        }
+                    }
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
+
+                            def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
+                            for ( pe in _newmanEnv.values ) {
+                                if ( pe.key == "hostname" ) {
+                                    pe.value = "${url.prd}".toString()
+                                }
+                            }
+
+                            new File(
+                                "${pwd()}/tests/smoke/prd-environment.json"
+                            ).write(
+                                JsonOutput.toJson(
+                                    _newmanEnv
+                                )
+                            )
+
+                            echo "Aplicação publicada com sucesso: ${url.prd}" 
+                            sh """
+                                newman run \
+                                    ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                        -e ${pwd()}/tests/smoke/prd-environment.json \
+                                        -r cli,json,junit \
+                                        --reporter-junit-export="${pwd()}/tests/smoke/_report/prd-newman-report.xml" \
+                                        --insecure \
+                                        --color on \
+                                        --disable-unicode 
+                            """
+                        }
+                    }
+                }
+            } 
             post {
                 success {
                     script {
@@ -733,14 +774,15 @@ pipeline {
 
         success {
             echo 'The Pipeline success :)'
-            
+            /*
             script {
                 sh "zip -r dist.zip ./"
             }
+            */
 
             junit "tests/_reports/**/*.xml"
 
-            archiveArtifacts artifacts: 'dist.zip', fingerprint: true
+            //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
             
             /*
             allure([
