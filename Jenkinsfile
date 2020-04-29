@@ -297,9 +297,11 @@ pipeline {
                                 df -h
                                 cd /bzt-configs
                                 bzt load-test.yml \
+                                    --no-system-configs \
+                                    --quiet \
                                     -o settings.env.HOSTNAME="${url.dev}"
                             """
-                            /*--quiet \
+                            /*
                                     -o modules.console.disable=true \
                                     -o settings.verbose=false \*/
                             
@@ -379,11 +381,11 @@ pipeline {
             }
         }*/
 
-        stage('AppConfig (HOM)') { steps {  echo "OK" } }
+        stage('AppConfig (HON)') { steps {  echo "OK" } }
 
-        stage('DB Migration (HOM)') { steps {  echo "OK" } }
+        stage('DB Migration (HON)') { steps {  echo "OK" } }
 
-        stage('Deploy (HOM)') {
+        stage('Deploy (HON)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -438,7 +440,7 @@ pipeline {
             }
         }
 
-        stage('Validation (HOM)') {
+        stage('Validation (HON)') {
             parallel {
                 stage("smoke") {
                     agent {
