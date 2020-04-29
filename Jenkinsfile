@@ -354,16 +354,15 @@ pipeline {
             post {
                 success {
                     script {
-                        sh """ sudo chown jenkins:jenkins ${pwd()} -R """
                         echo "Aplicação publicada e validada com sucesso em desenvolvimento: ${url.dev}" 
                         slackSend(channel: slack?.threadId, message: "Validate Development: finalizado com sucesso")
                     }
                 }
                 failure {
                     script {
-                        sh """ sudo chown jenkins:jenkins ${pwd()} -R """
+                        echo 'Falha ao realizar o deploy :('
                     }
-                    echo 'Falha ao realizar o deploy :('
+                    
                 }
             }
         }
