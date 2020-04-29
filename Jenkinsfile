@@ -363,11 +363,11 @@ pipeline {
                                 --build-arg "user=jenkins" \
                                 --build-arg "group=jenkins" \
                                 --build-arg "uid=${env.JKS_USERID}" \
-                                --build-arg "gid=${env.JKS_GROUPID}" 
+                                --build-arg "gid=${env.JKS_GROUPID}" . 
                             """
                             args """ -u ${env.JKS_USERID}:${env.JKS_GROUPID} \
                                 --entrypoint='' \
-                                -v ${pwd()}/tests/load:/bzt-configs
+                                -v "${pwd()}/tests/load:/bzt-configs"
                             """
                         }
                     }
