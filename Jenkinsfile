@@ -777,7 +777,7 @@ pipeline {
             }
             */
 
-            junit "tests/_reports/**/*.xml"
+            //junit "tests/_reports/**/*.xml"
 
             //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
             
@@ -792,7 +792,7 @@ pipeline {
                 ]
             ])
             */
-            
+            /*
             publishHTML target: [
                 allowMissing: false,
                 alwaysLinkToLastBuild: false,
@@ -800,7 +800,7 @@ pipeline {
                 reportDir: 'tests/_reports/coverage',
                 reportFiles: 'index.html',
                 reportName: 'Coverage'
-            ]
+            ]*/
         }
 
         failure {
