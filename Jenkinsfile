@@ -359,15 +359,13 @@ pipeline {
                         dockerfile { 
                             filename 'LoadTest.Dockerfile'
                             dir './'
-                            additionalBuildArgs  """ 
-                                --build-arg version=0.0.1 \
-                                --build-arg user=jenkins \
-                                --build-arg group=jenkins \
-                                --build-arg uid=${env.JKS_USERID} \
-                                --build-arg gid=${env.JKS_GROUPID} 
+                            additionalBuildArgs  """ --build-arg "version=0.0.1" \
+                                --build-arg "user=jenkins" \
+                                --build-arg "group=jenkins" \
+                                --build-arg "uid=${env.JKS_USERID}" \
+                                --build-arg "gid=${env.JKS_GROUPID}" 
                             """
-                            args """
-                                -u jenkins:jenkins \
+                            args """ -u ${env.JKS_USERID}:${env.JKS_GROUPID} \
                                 --entrypoint='' \
                                 -v ${pwd()}/tests/load:/bzt-configs
                             """
