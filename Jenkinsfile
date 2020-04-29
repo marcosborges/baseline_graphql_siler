@@ -197,10 +197,10 @@ pipeline {
             }
         }
         
-        /*stage( 'AppConfig (DEV)') { steps {   echo "OK" } }
-        stage( 'DB Migration (DEV)') { steps {  echo "OK" } }*/
+        /*stage( 'AppConfig (Development)') { steps {   echo "OK" } }
+        stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
 
-        stage( 'Deploy (DEV)') {
+        stage( 'Deploy (Development)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -268,7 +268,7 @@ pipeline {
             }
         }
 
-        stage( 'Validation (DEV)' ) {
+        stage( 'Validation (Development)' ) {
             parallel {
                 stage("healthz") {
                     steps {
@@ -419,10 +419,10 @@ pipeline {
             }
         }*/
 
-        /*stage('AppConfig (HON)') { steps {  echo "OK" } }
-        stage('DB Migration (HON)') { steps {  echo "OK" } }*/
+        /*stage('AppConfig (Homologation)') { steps {  echo "OK" } }
+        stage('DB Migration (Homologation)') { steps {  echo "OK" } }*/
 
-        stage('Deploy (HON)') {
+        stage('Deploy (Homologation)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -477,7 +477,7 @@ pipeline {
             }
         }
 
-        stage('Validation (HON)') {
+        stage('Validation (Homologation)') {
             parallel {
                 stage("healthz") {
                      steps {
@@ -642,10 +642,10 @@ pipeline {
             }
         }*/
 
-        /*stage('AppConfig (PRD)') { steps {  echo "OK" } }
-        stage('DB Migration (PRD)') { steps {  echo "OK" } }*/
+        /*stage('AppConfig (Production)') { steps {  echo "OK" } }
+        stage('DB Migration (Production)') { steps {  echo "OK" } }*/
 
-        stage('Deploy (PRD)') {
+        stage('Deploy (Production)') {
             when {
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS' 
@@ -700,7 +700,7 @@ pipeline {
             }
         }
 
-        stage('Validation (PRD)') {
+        stage('Validation (Production)') {
             parallel {
                 stage("healthz") {
                     steps {
