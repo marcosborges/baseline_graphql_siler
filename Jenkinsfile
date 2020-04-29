@@ -274,6 +274,13 @@ pipeline {
         stage( 'Validation (DEV)') {
 
             parallel {
+                stage("healthz") {
+                    steps {
+                        script {
+                            echo "Aplicação publicada com sucesso" 
+                        }
+                    }
+                }
                 stage("smoke") {
                     agent {
                         docker { 
