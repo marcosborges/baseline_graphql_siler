@@ -354,6 +354,13 @@ pipeline {
                         }
                     }
                 }
+                stage("security") {
+                    steps {
+                        script {
+                            echo "Aplicação publicada com sucesso" 
+                        }
+                    }
+                }
                 stage ("load") {
                     agent {
                         dockerfile { 
