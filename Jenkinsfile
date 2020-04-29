@@ -196,7 +196,7 @@ pipeline {
             }
         }
 
-        stage( 'AppConfig (DEV)') { echo "OK" }
+        stage( 'AppConfig (DEV)') { steps {   echo "OK" } }
 
         stage( 'DB Migration (DEV)') { steps {  echo "OK" } }
 
