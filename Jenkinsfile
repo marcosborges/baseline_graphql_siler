@@ -197,9 +197,8 @@ pipeline {
             }
         }
         
-        stage( 'AppConfig (DEV)') { steps {   echo "OK" } }
-
-        stage( 'DB Migration (DEV)') { steps {  echo "OK" } }
+        /*stage( 'AppConfig (DEV)') { steps {   echo "OK" } }
+        stage( 'DB Migration (DEV)') { steps {  echo "OK" } }*/
 
         stage( 'Deploy (DEV)') {
             when {
@@ -358,14 +357,14 @@ pipeline {
                         }
                     }
                 }
-                stage("security") {
+                /*stage("security") {
                     steps {
                         script {
                             echo "Aplicação publicada com sucesso" 
                         }
                     }
-                }
-                stage ("load") {
+                }*/
+                /*stage ("load") {
                     
                     agent {
                         docker { 
@@ -388,7 +387,7 @@ pipeline {
                             """
                         }
                     }
-                }
+                }*/
             }                
             post {
                 success {
@@ -420,9 +419,8 @@ pipeline {
             }
         }*/
 
-        stage('AppConfig (HON)') { steps {  echo "OK" } }
-
-        stage('DB Migration (HON)') { steps {  echo "OK" } }
+        /*stage('AppConfig (HON)') { steps {  echo "OK" } }
+        stage('DB Migration (HON)') { steps {  echo "OK" } }*/
 
         stage('Deploy (HON)') {
             when {
@@ -644,9 +642,8 @@ pipeline {
             }
         }*/
 
-        stage('AppConfig (PRD)') { steps {  echo "OK" } }
-
-        stage('DB Migration (PRD)') { steps {  echo "OK" } }
+        /*stage('AppConfig (PRD)') { steps {  echo "OK" } }
+        stage('DB Migration (PRD)') { steps {  echo "OK" } }*/
 
         stage('Deploy (PRD)') {
             when {
