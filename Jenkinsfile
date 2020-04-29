@@ -296,8 +296,9 @@ pipeline {
                                 pwd
                                 ls -lah
                                 df -h
-                                cd /bzt-configs
-                                bzt load-test.yml \
+                                cd ~/
+                                whoami
+                                cd /bzt-configs && bzt load-test.yml \
                                     --no-system-configs \
                                     --quiet \
                                     -o settings.env.HOSTNAME="${url.dev}"
