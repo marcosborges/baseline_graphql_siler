@@ -270,15 +270,16 @@ pipeline {
         }
 
         stage( 'Validation (DEV)') {
-            failFast true
-            parallel {
+            stages {
                 stage("healthz") {
                     steps {
                         script {
                             sh """ curl -X GET -H "Content-type: application/json" ${url.dev}/health """ 
                         }
                     }
-                    stages {
+                }
+                stage("testing") {
+                    parallel {
                         stage("smoke") {
                             agent {
                                 docker { 
@@ -390,9 +391,10 @@ pipeline {
                                 }
                             }
                         }
+                        
                     }
+                    
                 }
-                
             }
             post {
                 success {
