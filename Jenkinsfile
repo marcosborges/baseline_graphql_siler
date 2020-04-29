@@ -269,8 +269,9 @@ pipeline {
             }
         }
 
-        stage( 'Validation (DEV)') {
-            stages {
+        stage( 'Validation (DEV)' ) {
+
+            parallel {
                 stage("healthz") {
                     steps {
                         script {
@@ -278,124 +279,119 @@ pipeline {
                         }
                     }
                 }
-                stage("testing") {
-                    parallel {
-                        stage("smoke") {
-                            agent {
-                                docker { 
-                                    image 'postman/newman'
-                                    args  "--entrypoint=''"
-                                }
-                            }
-                            steps {
-                                unstash 'checkoutSources'
-                                script {
-
-                                    def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
-                                    for ( pe in _newmanEnv.values ) {
-                                        if ( pe.key == "hostname" ) {
-                                            pe.value = "${url.dev}".toString()
-                                        }
-                                    }
-
-                                    new File(
-                                        "${pwd()}/tests/smoke/dev-environment.json"
-                                    ).write(
-                                        JsonOutput.toJson(
-                                            _newmanEnv
-                                        )
-                                    )
-
-                                    echo "Aplicação publicada com sucesso: ${url.dev}" 
-                                    sh """
-                                        newman run \
-                                            ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
-                                                -e ${pwd()}/tests/smoke/dev-environment.json \
-                                                -r cli,json,junit \
-                                                --reporter-junit-export="${pwd()}/tests/smoke/_report/dev-newman-report.xml" \
-                                                --insecure \
-                                                --color on \
-                                                --disable-unicode 
-                                    """
-                                }
-                            }
+                stage("smoke") {
+                    agent {
+                        docker { 
+                            image 'postman/newman'
+                            args  "--entrypoint=''"
                         }
-                        stage("functional") {
-                            agent {
-                                docker { 
-                                    image 'postman/newman'
-                                    args  "--entrypoint=''"
-                                }
-                            }
-                            steps {
-                                unstash 'checkoutSources'
-                                script {
+                    }
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
 
-                                    def _newmanEnv = readJSON file: "${pwd()}/tests/functional/environment.json"
-                                    for ( pe in _newmanEnv.values ) {
-                                        if ( pe.key == "hostname" ) {
-                                            pe.value = "${url.dev}".toString()
-                                        }
-                                    }
+                            def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
+                            for ( pe in _newmanEnv.values ) {
+                                if ( pe.key == "hostname" ) {
+                                    pe.value = "${url.dev}".toString()
+                                }
+                            }
 
-                                    new File(
-                                        "${pwd()}/tests/functional/dev-environment.json"
-                                    ).write(
-                                        JsonOutput.toJson(
-                                            _newmanEnv
-                                        )
-                                    )
+                            new File(
+                                "${pwd()}/tests/smoke/dev-environment.json"
+                            ).write(
+                                JsonOutput.toJson(
+                                    _newmanEnv
+                                )
+                            )
 
-                                    echo "Aplicação publicada com sucesso: ${url.dev}" 
-                                    sh """
-                                        newman run \
-                                            ${pwd()}/tests/functional/baseline_graphql_siler_functional.postman_collection.json \
-                                                -e ${pwd()}/tests/functional/dev-environment.json \
-                                                -r cli,json,junit \
-                                                --reporter-junit-export="${pwd()}/tests/functional/_report/dev-newman-report.xml" \
-                                                --insecure \
-                                                --color on \
-                                                --disable-unicode 
-                                    """
-                                }
-                            }
+                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            sh """
+                                newman run \
+                                    ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                        -e ${pwd()}/tests/smoke/dev-environment.json \
+                                        -r cli,json,junit \
+                                        --reporter-junit-export="${pwd()}/tests/smoke/_report/dev-newman-report.xml" \
+                                        --insecure \
+                                        --color on \
+                                        --disable-unicode 
+                            """
                         }
-                        stage("security") {
-                            steps {
-                                script {
-                                    echo "Aplicação publicada com sucesso" 
-                                }
-                            }
+                    }
+                }
+                stage("functional") {
+                    agent {
+                        docker { 
+                            image 'postman/newman'
+                            args  "--entrypoint=''"
                         }
-                        stage ("load") {
-                            
-                            agent {
-                                docker { 
-                                    image 'blazemeter/taurus'
-                                    args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
+                    }
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
+
+                            def _newmanEnv = readJSON file: "${pwd()}/tests/functional/environment.json"
+                            for ( pe in _newmanEnv.values ) {
+                                if ( pe.key == "hostname" ) {
+                                    pe.value = "${url.dev}".toString()
                                 }
                             }
-                            
-                            steps {
-                                unstash 'checkoutSources'
-                                script {
-                                    sh """  
-                                        cd /bzt-configs 
-                                        bzt load-test.yml \
-                                            --quiet \
-                                            -o modules.console.disable=true \
-                                            -o settings.verbose=false \
-                                            -o settings.env.HOSTNAME="${url.dev}"
-                                        chown ${env.JKS_USERID}:${env.JKS_GROUPID} * -R
-                                    """
-                                }
-                            }
+
+                            new File(
+                                "${pwd()}/tests/functional/dev-environment.json"
+                            ).write(
+                                JsonOutput.toJson(
+                                    _newmanEnv
+                                )
+                            )
+
+                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            sh """
+                                newman run \
+                                    ${pwd()}/tests/functional/baseline_graphql_siler_functional.postman_collection.json \
+                                        -e ${pwd()}/tests/functional/dev-environment.json \
+                                        -r cli,json,junit \
+                                        --reporter-junit-export="${pwd()}/tests/functional/_report/dev-newman-report.xml" \
+                                        --insecure \
+                                        --color on \
+                                        --disable-unicode 
+                            """
                         }
-                        
+                    }
+                }
+                stage("security") {
+                    steps {
+                        script {
+                            echo "Aplicação publicada com sucesso" 
+                        }
+                    }
+                }
+                stage ("load") {
+                    
+                    agent {
+                        docker { 
+                            image 'blazemeter/taurus'
+                            args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
+                        }
                     }
                     
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
+                            sh """  
+                                cd /bzt-configs 
+                                bzt load-test.yml \
+                                    --quiet \
+                                    -o modules.console.disable=true \
+                                    -o settings.verbose=false \
+                                    -o settings.env.HOSTNAME="${url.dev}"
+                                chown ${env.JKS_USERID}:${env.JKS_GROUPID} * -R
+                            """
+                        }
+                    }
                 }
-            }
+            }                
+            
             post {
                 success {
                     script {
