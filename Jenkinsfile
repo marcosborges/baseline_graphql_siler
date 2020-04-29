@@ -34,7 +34,6 @@ pipeline {
 
     stages {
 
-        
         stage('Checkout Sources') {
             steps {
 
@@ -275,6 +274,86 @@ pipeline {
         stage( 'Validation (DEV)') {
 
             parallel {
+                stage("smoke") {
+                    agent {
+                        docker { 
+                            image 'postman/newman'
+                            args  "--entrypoint=''"
+                        }
+                    }
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
+
+                            def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
+                            for ( pe in _newmanEnv.values ) {
+                                if ( pe.key == "hostname" ) {
+                                    pe.value = "${url.dev}".toString()
+                                }
+                            }
+
+                            new File(
+                                "${pwd()}/tests/smoke/uat-environment.json"
+                            ).write(
+                                JsonOutput.toJson(
+                                    _newmanEnv
+                                )
+                            )
+
+                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            sh """
+                                newman run \
+                                    ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                        -e ${pwd()}/tests/smoke/uat-environment.json \
+                                        -r cli,json,junit \
+                                        --reporter-junit-export="${pwd()}/tests/smoke/_report/uat-newman-report.xml" \
+                                        --insecure \
+                                        --color on \
+                                        --disable-unicode 
+                            """
+                        }
+                    }
+                }
+                stage("functional") {
+                    agent {
+                        docker { 
+                            image 'postman/newman'
+                            args  "--entrypoint=''"
+                        }
+                    }
+                    steps {
+                        unstash 'checkoutSources'
+                        script {
+
+                            def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
+                            for ( pe in _newmanEnv.values ) {
+                                if ( pe.key == "hostname" ) {
+                                    pe.value = "${url.dev}".toString()
+                                }
+                            }
+
+                            new File(
+                                "${pwd()}/tests/smoke/uat-environment.json"
+                            ).write(
+                                JsonOutput.toJson(
+                                    _newmanEnv
+                                )
+                            )
+
+                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            sh """
+                                newman run \
+                                    ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
+                                        -e ${pwd()}/tests/smoke/uat-environment.json \
+                                        -r cli,json,junit \
+                                        --reporter-junit-export="${pwd()}/tests/smoke/_report/uat-newman-report.xml" \
+                                        --insecure \
+                                        --color on \
+                                        --disable-unicode 
+                            """
+                        }
+                    }
+                }
                 stage ("load") {
                     agent {
                         dockerfile { 
@@ -323,46 +402,7 @@ pipeline {
                         }
                     }
                 }
-                stage("smoke") {
-                    agent {
-                        docker { 
-                            image 'postman/newman'
-                            args  "--entrypoint=''"
-                        }
-                    }
-                    steps {
-                        unstash 'checkoutSources'
-                        script {
-
-                            def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
-                            for ( pe in _newmanEnv.values ) {
-                                if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.dev}".toString()
-                                }
-                            }
-
-                            new File(
-                                "${pwd()}/tests/smoke/uat-environment.json"
-                            ).write(
-                                JsonOutput.toJson(
-                                    _newmanEnv
-                                )
-                            )
-
-                            echo "Aplicação publicada com sucesso: ${url.dev}" 
-                            sh """
-                                newman run \
-                                    ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
-                                        -e ${pwd()}/tests/smoke/uat-environment.json \
-                                        -r cli,json,junit \
-                                        --reporter-junit-export="${pwd()}/tests/smoke/_report/uat-newman-report.xml" \
-                                        --insecure \
-                                        --color on \
-                                        --disable-unicode 
-                            """
-                        }
-                    }
-                }
+                
             }
             post {
                 success {
