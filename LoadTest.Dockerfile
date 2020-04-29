@@ -2,12 +2,12 @@ FROM blazemeter/taurus
 
 ENV user jenkins
  
-RUN useradd -m -d /home/${user} ${user} \
- && chown -R ${user} /home/${user} \
- && usermod -aG root ${user}
+RUN useradd -m -d /home/jenkins jenkins \
+ && chown -R jenkins /home/jenkins \
+ && usermod -aG root jenkins
 
 #COPY .bzt-rc /.bzt-rc
  
-USER ${user}
+USER jenkins
  
 ENTRYPOINT ['']
