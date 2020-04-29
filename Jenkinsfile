@@ -275,7 +275,7 @@ pipeline {
                     agent {
                         dockerfile { 
                             filename 'LoadTest.Dockerfile'
-                            dir './',
+                            dir './'
                             additionalBuildArgs  '--build-arg version=0.0.1'
                             args "--entrypoint='' -v ${pwd()}/tests/load:/bzt-configs"
                         }
