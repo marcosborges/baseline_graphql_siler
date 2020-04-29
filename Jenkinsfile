@@ -284,7 +284,11 @@ pipeline {
                                 --build-arg uid=${env.JKS_USERID} \
                                 --build-arg gid=${env.JKS_GROUPID} 
                             """
-                            args " -u jenkins:jenkins --entrypoint='' -v ${pwd()}/tests/load:/bzt-configs"
+                            args """
+                                -u jenkins:jenkins \
+                                --entrypoint='' \
+                                -v ${pwd()}/tests/load:/bzt-configs
+                            """
                         }
                     }
                     /*agent {
