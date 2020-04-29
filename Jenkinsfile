@@ -196,9 +196,9 @@ pipeline {
             }
         }
 
-        stage( 'AppConfig (DEV)') { }
+        stage( 'AppConfig (DEV)') { echo "OK" }
 
-        stage( 'DB Migration (DEV)') { }
+        stage( 'DB Migration (DEV)') {  echo "OK" }
 
         stage( 'Deploy (DEV)') {
             when {
@@ -379,9 +379,9 @@ pipeline {
             }
         }*/
 
-        stage('AppConfig (HOM)') { }
+        stage('AppConfig (HOM)') {  echo "OK" }
 
-        stage('DB Migration (HOM)') { }
+        stage('DB Migration (HOM)') {  echo "OK" }
 
         stage('Deploy (HOM)') {
             when {
@@ -547,9 +547,9 @@ pipeline {
             }
         }*/
 
-        stage('AppConfig (PRD)') { }
+        stage('AppConfig (PRD)') {  echo "OK" }
 
-        stage('DB Migration (PRD)') { }
+        stage('DB Migration (PRD)') {  echo "OK" }
 
         stage('Deploy (PRD)') {
             when {
