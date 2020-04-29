@@ -414,7 +414,6 @@ pipeline {
                         }
                     }
                 }
-                
             }
             post {
                 success {
