@@ -11,7 +11,7 @@ ENV uid=$uid
 ENV gid=$gid
 
 RUN groupadd -g ${gid} ${group} 
-RUN useradd -m -d /home/${user} -G ${group} --uid ${uid} ${user} \
+RUN useradd -m -d /home/${user} -g ${group} --uid ${uid} ${user} \
  && chown -R ${user} /home/${user} \
  && usermod -aG root $USER
 
