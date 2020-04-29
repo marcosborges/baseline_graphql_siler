@@ -15,8 +15,8 @@ pipeline {
     agent any
 
     options {
-        preserveStashes(buildCount: 10) 
-        buildDiscarder(logRotator(numToKeepStr:'10')) 
+        preserveStashes(buildCount: 2) 
+        buildDiscarder(logRotator(numToKeepStr:'2')) 
     }
 
     environment {
@@ -36,6 +36,7 @@ pipeline {
 
         stage('Checkout Sources') {
             steps {
+
                 //checkout scm
                 script {
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
@@ -629,6 +630,10 @@ pipeline {
     }
 
     post {
+
+        always {
+            cleanWs()
+        }
 
         success {
             echo 'The Pipeline success :)'
