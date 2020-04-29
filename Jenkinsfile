@@ -35,170 +35,170 @@ pipeline {
     stages {
 
         
-            stage('Checkout Sources') {
-                steps {
+        stage('Checkout Sources') {
+            steps {
 
-                    //checkout scm
+                //checkout scm
+                script {
+                    commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
+                    commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
+                }
+                stash includes: '**/*', name: 'checkoutSources'
+            }
+            post {
+                success {
                     script {
-                        commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
-                        commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
-                    }
-                    stash includes: '**/*', name: 'checkoutSources'
-                }
-                post {
-                    success {
-                        script {
-                            slack = slackSend(
-                                message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
-                                "*App:* ${env.APP_NAME}\n" +
-                                "*Version:* ${env.APP_VERSION}\n" +
-                                "*Commit:* ${commit}\n" +
-                                "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).userName}\n" +
-                                "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
-                                "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
+                        slack = slackSend(
+                            message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
+                            "*App:* ${env.APP_NAME}\n" +
+                            "*Version:* ${env.APP_VERSION}\n" +
+                            "*Commit:* ${commit}\n" +
+                            "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).userName}\n" +
+                            "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
+                            "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
 
-                            )
-                            slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets.join('\n')}")
-                        }
+                        )
+                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets.join('\n')}")
                     }
-                    failure {
-                        echo 'Falha ao executar o checkout do projeto :('
-                    }
+                }
+                failure {
+                    echo 'Falha ao executar o checkout do projeto :('
                 }
             }
-
-            stage('Dependencies Restore') {
-                agent {
-                    docker { image 'phpswoole/swoole' }
-                }
-                steps {
-                    sh " composer -q -n install "
-                    stash includes: 'vendor/**/*', name: 'restoreSources'
-                }
-                post {
-                    success {
-                        script {
-                            slackSend(channel: slack?.threadId, message: "Dependencies Restore: finalizado com sucesso")
-                        }
-                    }
-                    failure {
-                        echo 'Falha ao executar o restauração de dependencias :('
-                    }
-                }
-            }
-
-            stage('Testing') {
-                agent {
-                    dockerfile { 
-                        filename 'Dockerfile'
-                        dir './'
-                    }
-                }
-                steps {
-                    unstash 'restoreSources'
-                    sh " composer test "
-                    sh """
-                        sed -i 's|${pwd()}/||' ${pwd()}/tests/unit/_reports/logs/clover.xml 
-                        sed -i 's|${pwd()}/||' ${pwd()}/tests/unit/_reports/logs/junit.xml
-                    """
-                    stash includes: '**/*', name: 'testSources'
-                }
-                post {
-                    success {
-                        script {
-                            slackSend(channel: slack?.threadId, message: "Testing: finalizado com sucesso")
-                        }
-                    }
-                    failure {
-                        echo 'Falha ao executar os testes :('
-                    }
-                }
-            }
-
-            stage('Quality Gate') {
-                steps {
-                    unstash 'checkoutSources'
-                    unstash 'restoreSources'
-                    unstash 'testSources'
-                
-                    script {
-                        def scannerHome = tool 'SonarScanner';
-                        withSonarQubeEnv ('SonarQubeCloud') {
-                            sh """    
-                                ${scannerHome}/bin/sonar-scanner \
-                                    -Dsonar.projectKey="${env.SONAR_PROJECT_KEY}" \
-                                    -Dsonar.organization="${env.SONAR_ORGANIZATION_KEY}" \
-                                    -Dsonar.projectName="${env.APP_NAME}" \
-                                    -Dsonar.projectVersion="${env.APP_VERSION}" \
-                                    -Dsonar.sources="src" \
-                                    -Dsonar.tests="tests" \
-                                    -Dsonar.language="php" \
-                                    -Dsonar.sourceEncoding="UTF-8" \
-                                    -Dsonar.php.coverage.reportPaths=tests/unit/_reports/logs/clover.xml \
-                                    -Dsonar.php.tests.reportPath=tests/unit/_reports/logs/junit.xml \
-                            """
-                        }
-                    }
-                    sleep(60)
-                    timeout (time: 1, unit: 'HOURS') {
-                        waitForQualityGate abortPipeline: true
-                    }
-                }
-                post {
-                    success {
-                        script {
-                            slackSend(channel: slack?.threadId, message: "Quality Gate: finalizado com sucesso. Link: https://sonarcloud.io/dashboard?id=marcosborges_baseline_graphql_siler")
-                        }
-                    }
-                    failure {
-                        echo 'Falha ao executar a revisão de código e cobertura de testes :('
-                    }
-                }
-            }
-
-            stage('Container Build') {
-                steps {
-                    script {
-                        unstash 'restoreSources'
-                        echo "${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}"
-                        container = docker.build("${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
-                    }
-                }
-                post {
-                    success {
-                        script {
-                            slackSend(channel: slack?.threadId, message: "Container Build: finalizado com sucesso")
-                        }
-                    }
-                    failure {
-                        echo 'Falha ao executar a construção do container :('
-                    }
-                }
-            }
-
-            stage('Snapshot Registry') {
-                steps {
-                    script {
-                        sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
-                        docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
-                            container.push("${env.APP_VERSION}")
-                            container.push("${commit}")
-                        }
-                    }
-                }
-                post {
-                    success {
-                        script {
-                            slackSend(channel: slack?.threadId, message: "Snapshot Registry: finalizado com sucesso")
-                        }
-                    }
-                    failure {
-                        echo 'Falha ao registrar o container :('
-                    }
-                }
-            }
-            
         }
+
+        stage('Dependencies Restore') {
+            agent {
+                docker { image 'phpswoole/swoole' }
+            }
+            steps {
+                sh " composer -q -n install "
+                stash includes: 'vendor/**/*', name: 'restoreSources'
+            }
+            post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Dependencies Restore: finalizado com sucesso")
+                    }
+                }
+                failure {
+                    echo 'Falha ao executar o restauração de dependencias :('
+                }
+            }
+        }
+
+        stage('Testing') {
+            agent {
+                dockerfile { 
+                    filename 'Dockerfile'
+                    dir './'
+                }
+            }
+            steps {
+                unstash 'restoreSources'
+                sh " composer test "
+                sh """
+                    sed -i 's|${pwd()}/||' ${pwd()}/tests/unit/_reports/logs/clover.xml 
+                    sed -i 's|${pwd()}/||' ${pwd()}/tests/unit/_reports/logs/junit.xml
+                """
+                stash includes: '**/*', name: 'testSources'
+            }
+            post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Testing: finalizado com sucesso")
+                    }
+                }
+                failure {
+                    echo 'Falha ao executar os testes :('
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                unstash 'checkoutSources'
+                unstash 'restoreSources'
+                unstash 'testSources'
+            
+                script {
+                    def scannerHome = tool 'SonarScanner';
+                    withSonarQubeEnv ('SonarQubeCloud') {
+                        sh """    
+                            ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey="${env.SONAR_PROJECT_KEY}" \
+                                -Dsonar.organization="${env.SONAR_ORGANIZATION_KEY}" \
+                                -Dsonar.projectName="${env.APP_NAME}" \
+                                -Dsonar.projectVersion="${env.APP_VERSION}" \
+                                -Dsonar.sources="src" \
+                                -Dsonar.tests="tests" \
+                                -Dsonar.language="php" \
+                                -Dsonar.sourceEncoding="UTF-8" \
+                                -Dsonar.php.coverage.reportPaths=tests/unit/_reports/logs/clover.xml \
+                                -Dsonar.php.tests.reportPath=tests/unit/_reports/logs/junit.xml \
+                        """
+                    }
+                }
+                sleep(60)
+                timeout (time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+            post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Quality Gate: finalizado com sucesso. Link: https://sonarcloud.io/dashboard?id=marcosborges_baseline_graphql_siler")
+                    }
+                }
+                failure {
+                    echo 'Falha ao executar a revisão de código e cobertura de testes :('
+                }
+            }
+        }
+
+        stage('Container Build') {
+            steps {
+                script {
+                    unstash 'restoreSources'
+                    echo "${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}"
+                    container = docker.build("${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION}", " -f Build.Dockerfile . ")
+                }
+            }
+            post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Container Build: finalizado com sucesso")
+                    }
+                }
+                failure {
+                    echo 'Falha ao executar a construção do container :('
+                }
+            }
+        }
+
+        stage('Snapshot Registry') {
+            steps {
+                script {
+                    sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
+                    docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
+                        container.push("${env.APP_VERSION}")
+                        container.push("${commit}")
+                    }
+                }
+            }
+            post {
+                success {
+                    script {
+                        slackSend(channel: slack?.threadId, message: "Snapshot Registry: finalizado com sucesso")
+                    }
+                }
+                failure {
+                    echo 'Falha ao registrar o container :('
+                }
+            }
+        }
+            
+        
 
         stage( 'AppConfig (DEV)') { steps {   echo "OK" } }
 
