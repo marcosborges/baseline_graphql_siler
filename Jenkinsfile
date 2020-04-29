@@ -560,7 +560,7 @@ pipeline {
                             echo "Aplicação publicada com sucesso: ${url.dev}" 
                             sh """
                                 newman run \
-                                    ${pwd()}/tests/functional/baseline_graphql_siler_smoke.postman_collection.json \
+                                    ${pwd()}/tests/functional/baseline_graphql_siler_functional.postman_collection.json \
                                         -e ${pwd()}/tests/functional/uat-environment.json \
                                         -r cli,json,junit \
                                         --reporter-junit-export="${pwd()}/tests/functional/_report/uat-newman-report.xml" \
