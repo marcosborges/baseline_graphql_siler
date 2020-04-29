@@ -25,6 +25,7 @@ scenarios:
 
 
 settings:
+  default-executor: jmeter
   artifacts-dir: ./tmp/%H%M%S # path where to save artifacts, default is %Y-%m-%d_%H-%M-%S.%f
   aggregator: consolidator
   check-interval: 1
