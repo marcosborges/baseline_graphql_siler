@@ -369,47 +369,32 @@ pipeline {
                     }
                 }
                 stage ("load") {
+                    
                     agent {
-                        dockerfile { 
-                            filename 'LoadTest.Dockerfile'
-                            dir './'
-                            additionalBuildArgs  """ -f LoadTest.Dockerfile --build-arg "version=0.0.1" \
-                                --build-arg "user=jenkins" \
-                                --build-arg "group=jenkins" \
-                                --build-arg "uid=${env.JKS_USERID}" \
-                                --build-arg "gid=${env.JKS_GROUPID}" """
-                            args """ -u ${env.JKS_USERID}:${env.JKS_GROUPID} \
-                                --entrypoint='' \
-                                -v "${pwd()}/tests/load:/bzt-configs"
-                            """
-                        }
-                    }
-                    /*agent {
                         docker { 
                             image 'blazemeter/taurus'
                             args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
                         }
-                    }*/
+                    }
                     
                     steps {
                         unstash 'checkoutSources'
                         script {
-                            //pip install bzt
                             sh """  
                                 pwd
                                 ls -lah
                                 df -h
                                 cd ~/
                                 whoami
-                                cd /bzt-configs && bzt load-test.yml \
-                                    --no-system-configs \
+                                cd /bzt-configs 
+                                pwd
+                                bzt load-test.yml \
                                     --quiet \
-                                    -o settings.env.HOSTNAME="${url.dev}"
-                            """
-                            /*
                                     -o modules.console.disable=true \
-                                    -o settings.verbose=false \*/
-                            
+                                    -o settings.verbose=false \
+                                    -o settings.env.HOSTNAME="${url.dev}"
+                                chown ${env.JKS_USERID}:${env.JKS_GROUPID} * -R
+                            """
                         }
                     }
                 }
