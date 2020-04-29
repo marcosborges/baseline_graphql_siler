@@ -359,7 +359,7 @@ pipeline {
                         dockerfile { 
                             filename 'LoadTest.Dockerfile'
                             dir './'
-                            additionalBuildArgs  """ --build-arg "version=0.0.1" \
+                            additionalBuildArgs  """ -f LoadTest.Dockerfile --build-arg "version=0.0.1" \
                                 --build-arg "user=jenkins" \
                                 --build-arg "group=jenkins" \
                                 --build-arg "uid=${env.JKS_USERID}" \
