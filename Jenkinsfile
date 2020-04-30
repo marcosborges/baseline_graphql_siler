@@ -263,10 +263,10 @@ pipeline {
             }
             post {
                 success {
-                    slackSend(channel: slack?.threadId, message: "Implantação do container no ambiente de desenvolvimento realizada com sucesso.\nlink: ${_environments.dev.url}")
+                    slackSend(channel: slack?.threadId, message: "Implantação do container no *ambiente de desenvolvimento* realizada com sucesso.\nlink: ${_environments.dev.url}")
                 }
                 failure {
-                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no ambiente de desenvolvimento.\nlink:${env.BUILD_URL}")
+                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no *ambiente de desenvolvimento*.\nlink:${env.BUILD_URL}")
                 }
             }
         }
@@ -394,10 +394,10 @@ pipeline {
             }                
             post {
                 success {
-                    slackSend(channel: slack?.threadId, message: "Validação da implantação no ambiente de desenvolvimento realizada com sucesso.")
+                    slackSend(channel: slack?.threadId, message: "Validação da implantação no *ambiente de desenvolvimento* realizada com sucesso.")
                 }
                 failure {
-                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no ambiente de desenvolvimento.\nlink:${env.BUILD_URL}")
+                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no *ambiente de desenvolvimento*.\nlink:${env.BUILD_URL}")
                 }
             }
         }
@@ -453,10 +453,10 @@ pipeline {
             }
             post {
                 success {
-                    slackSend(channel: slack?.threadId, message: "Implantação do container no ambiente de homologação realizada com sucesso.\nlink: ${_environments.uat.url}")
+                    slackSend(channel: slack?.threadId, message: "Implantação do container no *ambiente de homologação* realizada com sucesso.\nlink: ${_environments.uat.url}")
                 }
                 failure {
-                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no ambiente de homologação .\nlink:${env.BUILD_URL}")
+                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no *ambiente de homologação* .\nlink:${env.BUILD_URL}")
                 }
             }
         }
@@ -572,10 +572,10 @@ pipeline {
             }
             post {
                 success {
-                    slackSend(channel: slack?.threadId, message: "Validação da implantação no ambiente de homologação realizada com sucesso.")
+                    slackSend(channel: slack?.threadId, message: "Validação da implantação no *ambiente de homologação* realizada com sucesso.")
                 }
                 failure {
-                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no ambiente de homologação.\nlink:${env.BUILD_URL}")
+                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no *ambiente de homologação*.\nlink:${env.BUILD_URL}")
                 }
             }
         }
@@ -603,7 +603,7 @@ pipeline {
         stage ('Approval Production Deploy') {
             steps {
                 script {
-                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de produção.\nlink:${env.BUILD_URL}/input")
+                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no *ambiente de produção*.\nlink:${env.BUILD_URL}/input")
                     timeout(time: 1, unit: 'HOURS') {
                         input message: 'Aprovar a implantação em produção?', ok: 'Yes'
                     }
@@ -654,10 +654,10 @@ pipeline {
             }
             post {
                 success {
-                    slackSend(channel: slack?.threadId, message: "Production Deploy: finalizado com sucesso. Url: ${_environments.prd.url}")
+                    slackSend(channel: slack?.threadId, message: "Implantação do container no *ambiente de produção* realizada com sucesso.\nlink: ${_environments.prd.url}")
                 }
                 failure {
-                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no ambiente de produção .\nlink:${env.BUILD_URL}")
+                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no *ambiente de produção* .\nlink:${env.BUILD_URL}")
                 }
             }
         }
