@@ -75,7 +75,7 @@ pipeline {
                                 def files = new ArrayList(entry.affectedFiles)
                                 for (int k = 0; k < files.size(); k++) {
                                     def file = files[k]
-                                    changeLogSets += "    ${file.editType.name} ${file.path}\n"
+                                    //changeLogSets += "    ${file.editType.name} ${file.path}\n"
                                 }
                             }
                         }
