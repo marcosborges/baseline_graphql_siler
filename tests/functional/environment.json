@@ -1,0 +1,14 @@
+{
+	"id": "31f605a7-a7c2-4976-9554-afb8aa390ad6",
+	"name": "jks5m",
+	"values": [
+		{
+			"key": "hostname",
+			"value": "",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2020-04-26T19:54:08.557Z",
+	"_postman_exported_using": "Postman/7.23.0"
+}
