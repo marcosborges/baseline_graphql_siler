@@ -71,7 +71,7 @@ pipeline {
                             def entries = currentBuild.changeSets[i].items
                             for (int j = 0; j < entries.length; j++) {
                                 def entry = entries[j]
-                                changeLogSets += "${new Date(entry.timestamp)}: ${entry.msg} \nby ${entry.author}\n\n"
+                                changeLogSets += "${entry.msg} \n${entry.author}\n(${new Date(entry.timestamp)})\n\n"
                                 def files = new ArrayList(entry.affectedFiles)
                                 for (int k = 0; k < files.size(); k++) {
                                     def file = files[k]
