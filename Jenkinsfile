@@ -3,13 +3,6 @@ import groovy.json.JsonOutput
 def container
 def commit
 def commitChangeset
-def url = [
-    dev : "",
-    uat : "",
-    prd : "",
-]
-
-
 def _environments = [
     dev : [
         name : "",
@@ -27,9 +20,6 @@ def _environments = [
         prev : ""
     ]
 ]
-
-
-
 def slack
 
 pipeline {
@@ -56,10 +46,8 @@ pipeline {
 
     stages {
         
-        stage('Checkout Sources') {
+        stage ( 'Checkout Sources' ) {
             steps {
-
-                //checkout scm
                 script {
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
@@ -77,14 +65,13 @@ pipeline {
                             "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName}\n" +
                             "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                             "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
-
                         )
                         def changeLogSets = ""
                         for (int i = 0; i < currentBuild.changeSets.size(); i++) {
                             def entries = currentBuild.changeSets[i].items
                             for (int j = 0; j < entries.length; j++) {
                                 def entry = entries[j]
-                                changeLogSets += "${entry.commitId} by ${entry.author} on ${new Date(entry.timestamp)}: ${entry.msg}\n"
+                                changeLogSets += "${entry.commitId} \nby ${entry.author} on ${new Date(entry.timestamp)}: ${entry.msg}\n"
                                 def files = new ArrayList(entry.affectedFiles)
                                 for (int k = 0; k < files.size(); k++) {
                                     def file = files[k]
@@ -92,17 +79,16 @@ pipeline {
                                 }
                             }
                         }
-                        slackSend(channel: slack?.threadId, 
-                            message: "Checkout: finalizado com sucesso.\n${changeLogSets}")
+                        slackSend(channel: slack?.threadId, message: "Os fontes da aplicação foram obtidos com sucesso. Confira o change-log:\n${changeLogSets}")
                     }
                 }
                 failure {
-                    echo 'Falha ao executar o checkout do projeto :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao obter os fontes da aplicação.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Dependencies Restore') {
+        stage ( 'Dependencies Restore' ) {
             agent {
                 docker { image 'phpswoole/swoole' }
             }
@@ -112,17 +98,15 @@ pipeline {
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Dependencies Restore: finalizado com sucesso")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Restauração de dependencias finalizada com sucesso.")
                 }
                 failure {
-                    echo 'Falha ao executar o restauração de dependencias :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao restaur as dependencias.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Testing') {
+        stage ( 'Testing' ) {
             agent {
                 dockerfile { 
                     filename 'Dockerfile'
@@ -140,22 +124,19 @@ pipeline {
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Testing: finalizado com sucesso")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Testes realizados com sucesso.")
                 }
                 failure {
-                    echo 'Falha ao executar os testes :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao realizar os testes.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage ( 'Quality Gate' ) {
             steps {
                 unstash 'checkoutSources'
                 unstash 'restoreSources'
                 unstash 'testSources'
-            
                 script {
                     def scannerHome = tool 'SonarScanner';
                     withSonarQubeEnv ('SonarQubeCloud') {
@@ -174,24 +155,22 @@ pipeline {
                         """
                     }
                 }
-                sleep(60)
+                sleep(30)
                 timeout (time: 1, unit: 'HOURS') {
                     waitForQualityGate abortPipeline: true
                 }
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Quality Gate: finalizado com sucesso. Link: https://sonarcloud.io/dashboard?id=marcosborges_baseline_graphql_siler")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Portal de qualidade finalizado com sucesso.\nlink:https://sonarcloud.io/dashboard?id=marcosborges_baseline_graphql_siler")
                 }
                 failure {
-                    echo 'Falha ao executar a revisão de código e cobertura de testes :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao passar pelo portal de qualidade.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Container Build') {
+        stage ( 'Container Build' ) {
             steps {
                 script {
                     unstash 'restoreSources'
@@ -201,34 +180,32 @@ pipeline {
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Container Build: finalizado com sucesso")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Aplicação containerizada com sucesso.")
                 }
                 failure {
-                    echo 'Falha ao executar a construção do container :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao construir o container com a aplicação.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Snapshot Registry') {
+        stage ( 'Snapshot Registry' ) {
             steps {
                 script {
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
                     docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
-                        container.push("${env.APP_VERSION}")
-                        container.push("${commit}")
+                        parallel {
+                            "version" : { container.push("${env.APP_VERSION}") },
+                            "commit" : { container.push("${commit}") },
+                        }
                     }
                 }
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Snapshot Registry: finalizado com sucesso")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Container classificado como snapshot e enviado para o registrador com sucesso.")
                 }
                 failure {
-                    echo 'Falha ao registrar o container :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao registrar o container.\nlink:${env.BUILD_URL}")
                 }
             }
         }
@@ -236,12 +213,7 @@ pipeline {
         /*stage( 'AppConfig (Development)') { steps {   echo "OK" } }
         stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
 
-        stage( 'Deploy (Development)') {
-            when {
-                expression {
-                    currentBuild.result == null || currentBuild.result == 'SUCCESS' 
-                }
-            }
+        stage ( 'Deploy (Development)' ) {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
@@ -289,17 +261,15 @@ pipeline {
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Development Deploy: finalizado com sucesso. Url: ${_environments.dev.url}")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Implantação do container no ambiente de desenvolvimento realizada com sucesso.\nlink: ${_environments.dev.url}")
                 }
                 failure {
-                    echo 'Falha ao realizar o deploy :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no ambiente de desenvolvimento.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage( 'Validation (Development)' ) {
+        stage ( 'Validation (Development)' ) {
             parallel {
                 stage("healthz") {
                     steps {
@@ -422,28 +392,20 @@ pipeline {
             }                
             post {
                 success {
-                    script {
-                        echo "Aplicação publicada e validada com sucesso em desenvolvimento: ${_environments.dev.url}" 
-                        slackSend(channel: slack?.threadId, message: "Validate Development: finalizado com sucesso")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Validação da implantação no ambiente de desenvolvimento realizada com sucesso.")
                 }
                 failure {
-                    script {
-                        echo 'Falha ao realizar o deploy :('
-                    }
-                    
+                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no ambiente de desenvolvimento.\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Approval Homologation Deploy') {
+        stage ( 'Approval Homologation Deploy' ) {
             steps {
                 script {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de homologação.")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de homologação.\nlink:${env.BUILD_URL}/input")
                     timeout(time: 1, unit: 'HOURS') {
-                        input message: 'Approve Deploy on Homologation?', ok: 'Yes'
+                        input message: 'Aprovar a implantação em homologação?', ok: 'Sim'
                     }
                 }
             }
@@ -452,22 +414,17 @@ pipeline {
         /*stage('AppConfig (Homologation)') { steps {  echo "OK" } }
         stage('DB Migration (Homologation)') { steps {  echo "OK" } }*/
 
-        stage('Deploy (Homologation)') {
-            when {
-                expression {
-                    currentBuild.result == null || currentBuild.result == 'SUCCESS' 
-                }
-            }
+        stage ( 'Deploy (Homologation)' ) {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
-                    def _name = "uat-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
+                     _environments.uat.name = "uat-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${data.project_id}
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
-                        gcloud run deploy ${_name} \
+                        gcloud run deploy ${_environments.uat.name} \
                             --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
@@ -476,43 +433,38 @@ pipeline {
                             --max-instances 5 \
                             --cpu 1000m \
                             --port 9501 \
-                            --labels "name=${_name}" \
+                            --labels "name=${_environments.uat.name}" \
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
                             --set-env-vars "APP_ENV=development"
                     """
-                    
                     def service = readJSON(text: sh(script: """
-                        gcloud run services describe ${_name} \
+                        gcloud run services describe ${_environments.uat.name} \
                             --platform managed \
                             --region ${env.GOOGLE_REGION} \
                             --format json
                         """, returnStdout : true).trim()
                     )
-
-                    url.uat = service.status.address.url
-
+                    _environments.uat.url = service.status.address.url
                 }
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Homologation Deploy: finalizado com sucesso. Url: ${url.uat}")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Implantação do container no ambiente de homologação realizada com sucesso.\nlink: ${_environments.uat.url}")
                 }
                 failure {
-                    echo 'Falha ao realizar o deploy :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no ambiente de homologação .\nlink:${env.BUILD_URL}")
                 }
             }
         }
 
-        stage('Validation (Homologation)') {
+        stage ('Validation (Homologation)') {
             parallel {
                 stage("healthz") {
                      steps {
                         script {
-                            sh """ curl -X GET -H "Content-type: application/json" ${url.uat}/health """ 
+                            sh """ curl -X GET -H "Content-type: application/json" ${_environments.uat.url}/health """ 
                         }
                     }
                 }
@@ -529,7 +481,7 @@ pipeline {
                             def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.uat}".toString()
+                                    pe.value = "${_environments.uat.url}".toString()
                                 }
                             }
                             new File("${pwd()}/tests/smoke/uat-environment.json").write(JsonOutput.toJson(_newmanEnv))
@@ -560,7 +512,7 @@ pipeline {
                             def _newmanEnv = readJSON file: "${pwd()}/tests/functional/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.uat}".toString()
+                                    pe.value = "${_environments.uat.url}".toString()
                                 }
                             }
 
@@ -618,17 +570,15 @@ pipeline {
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Validate Homologation: finalizado com sucesso")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Validação da implantação no ambiente de homologação realizada com sucesso.")
                 }
                 failure {
-                    echo 'Falha ao realizar o deploy :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no ambiente de homologação.\nlink:${env.BUILD_URL}")
                 }
             }
         }
         
-        stage('Release Registry') {
+        stage ('Release Registry') {
             steps {
                 script {
                     def _snapshot = """${env.REGISTRY_HOST}snapshot/${env.APP_NAME}"""
@@ -648,14 +598,12 @@ pipeline {
             }
         }
 
-        stage('Approval Production Deploy') {
+        stage ('Approval Production Deploy') {
             steps {
                 script {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de produção.")
-                    }
-                    timeout(time: 2, unit: 'HOURS') {
-                        input message: 'Approve Deploy on Production?', ok: 'Yes'
+                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de produção.\nlink:${enb.BUILD_URL}/input")
+                    timeout(time: 1, unit: 'HOURS') {
+                        input message: 'Aprovar a implantação em produção?', ok: 'Yes'
                     }
                 }
             }
@@ -665,21 +613,16 @@ pipeline {
         stage('DB Migration (Production)') { steps {  echo "OK" } }*/
 
         stage('Deploy (Production)') {
-            when {
-                expression {
-                    currentBuild.result == null || currentBuild.result == 'SUCCESS' 
-                }
-            }
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
-                    def _name = "prd-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
+                    _environments.prd.name = "prd-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${data.project_id}
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
-                        gcloud run deploy ${_name} \
+                        gcloud run deploy ${_environments.prd.name} \
                             --image ${env.REGISTRY_HOST}release/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
@@ -688,7 +631,7 @@ pipeline {
                             --max-instances 5 \
                             --cpu 1000m \
                             --port 9501 \
-                            --labels "name=${_name}" \
+                            --labels "name=${_environments.prd.name}" \
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
@@ -696,25 +639,23 @@ pipeline {
                     """
                     
                     def service = readJSON(text: sh(script: """
-                        gcloud run services describe ${_name} \
+                        gcloud run services describe ${_environments.prd.name} \
                             --platform managed \
                             --region ${env.GOOGLE_REGION} \
                             --format json
                         """, returnStdout : true).trim()
                     )
 
-                    url.prd = service.status.address.url
+                    _environments.prd.url = service.status.address.url
 
                 }
             }
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Production Deploy: finalizado com sucesso. Url: ${url.prd}")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Production Deploy: finalizado com sucesso. Url: ${_environments.prd.url}")
                 }
                 failure {
-                    echo 'Falha ao realizar o deploy :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao implantar o container no ambiente de produção .\nlink:${env.BUILD_URL}")
                 }
             }
         }
@@ -724,7 +665,7 @@ pipeline {
                 stage("healthz") {
                     steps {
                         script {
-                            sh """ curl -X GET -H "Content-type: application/json" ${url.prd}/health """ 
+                            sh """ curl -X GET -H "Content-type: application/json" ${_environments.prd.url}/health """ 
                         }
                     }
                 }
@@ -742,7 +683,7 @@ pipeline {
                             def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.prd}".toString()
+                                    pe.value = "${_environments.prd.url}".toString()
                                 }
                             }
 
@@ -754,7 +695,7 @@ pipeline {
                                 )
                             )
 
-                            echo "Aplicação publicada com sucesso: ${url.prd}" 
+                            echo "Aplicação publicada com sucesso: ${_environments.prd.url}" 
                             sh """
                                 newman run \
                                     ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
@@ -771,12 +712,10 @@ pipeline {
             } 
             post {
                 success {
-                    script {
-                        slackSend(channel: slack?.threadId, message: "Validate Production: finalizado com sucesso.")
-                    }
+                    slackSend(channel: slack?.threadId, message: "Validação da implantação no ambiente de produção realizada com sucesso.")
                 }
                 failure {
-                    echo 'Falha ao realizar o deploy :('
+                    slackSend(channel: slack?.threadId, message: "Falha ao realizar a implantação no ambiente de produção.\nlink:${env.BUILD_URL}")
                 }
             }
         }
