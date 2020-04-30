@@ -71,7 +71,7 @@ pipeline {
                             def entries = currentBuild.changeSets[i].items
                             for (int j = 0; j < entries.length; j++) {
                                 def entry = entries[j]
-                                changeLogSets += "${entry.commitId} \nby ${entry.author} on ${new Date(entry.timestamp)}: ${entry.msg}\n"
+                                changeLogSets += "${new Date(entry.timestamp)}: ${entry.msg} \nby ${entry.author}\n\n"
                                 def files = new ArrayList(entry.affectedFiles)
                                 for (int k = 0; k < files.size(); k++) {
                                     def file = files[k]
@@ -193,14 +193,8 @@ pipeline {
                 script {
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
                     docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
-                        parallel {
-                            stage("version") {
-                                container.push("${env.APP_VERSION}")
-                            }
-                            stage("commit") {
-                                container.push("${commit}")
-                            }
-                        }
+                        container.push("${env.APP_VERSION}")
+                        container.push("${commit}")
                     }
                 }
             }
