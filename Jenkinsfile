@@ -194,8 +194,12 @@ pipeline {
                     sh script:'#!/bin/sh -e\n' +  """ docker login -u _json_key -p "\$(cat ${env.GOOGLE_APPLICATION_CREDENTIALS})" https://${env.REGISTRY_HOST}""", returnStdout: false
                     docker.withRegistry("https://${env.REGISTRY_HOST}snapshot/") {
                         parallel {
-                            "version" : { container.push("${env.APP_VERSION}") },
-                            "commit" : { container.push("${commit}") },
+                            stage("version") {
+                                container.push("${env.APP_VERSION}")
+                            }
+                            stage("commit") {
+                                container.push("${commit}")
+                            }
                         }
                     }
                 }
