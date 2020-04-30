@@ -15,8 +15,8 @@ pipeline {
     agent any
 
     options {
-        preserveStashes(buildCount: 2) 
-        buildDiscarder(logRotator(numToKeepStr:'2')) 
+        preserveStashes(buildCount: 10) 
+        buildDiscarder(logRotator(numToKeepStr:'10')) 
     }
 
     environment {
@@ -405,7 +405,7 @@ pipeline {
             }
         }
 
-        /*stage('Approval Homologation Deploy') {
+        stage('Approval Homologation Deploy') {
             steps {
                 script {
                     script {
@@ -417,7 +417,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
 
         /*stage('AppConfig (Homologation)') { steps {  echo "OK" } }
         stage('DB Migration (Homologation)') { steps {  echo "OK" } }*/
@@ -496,22 +496,13 @@ pipeline {
                     steps {
                         unstash 'checkoutSources'
                         script {
-
                             def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
                                     pe.value = "${url.uat}".toString()
                                 }
                             }
-
-                            new File(
-                                "${pwd()}/tests/smoke/uat-environment.json"
-                            ).write(
-                                JsonOutput.toJson(
-                                    _newmanEnv
-                                )
-                            )
-
+                            new File("${pwd()}/tests/smoke/uat-environment.json").write(JsonOutput.toJson(_newmanEnv))
                             sh """
                                 newman run \
                                     ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
@@ -573,14 +564,12 @@ pipeline {
                     }
                 }*/
                 stage ("load") {
-                    
                     agent {
                         docker { 
                             image 'blazemeter/taurus'
                             args  """ -u 0:0 --entrypoint='' -v "${pwd()}/tests/load:/bzt-configs" """
                         }
                     }
-                    
                     steps {
                         unstash 'checkoutSources'
                         script {
@@ -629,7 +618,7 @@ pipeline {
             }
         }
 
-        /*stage('Approval Production Deploy') {
+        stage('Approval Production Deploy') {
             steps {
                 script {
                     script {
@@ -640,7 +629,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
 
         /*stage('AppConfig (Production)') { steps {  echo "OK" } }
         stage('DB Migration (Production)') { steps {  echo "OK" } }*/
