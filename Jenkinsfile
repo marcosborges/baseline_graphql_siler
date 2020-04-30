@@ -8,6 +8,28 @@ def url = [
     uat : "",
     prd : "",
 ]
+
+
+def _environments = [
+    dev : [
+        name : "",
+        url : "",
+        prev : ""
+    ],
+    uat : [
+        name : "",
+        url : "",
+        prev : ""
+    ],
+    prd : [
+        name : "",
+        url : "",
+        prev : ""
+    ]
+]
+
+
+
 def slack
 
 pipeline {
@@ -52,12 +74,26 @@ pipeline {
                             "*App:* ${env.APP_NAME}\n" +
                             "*Version:* ${env.APP_VERSION}\n" +
                             "*Commit:* ${commit}\n" +
-                            "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).userName}\n" +
+                            "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName}\n" +
                             "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                             "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
 
                         )
-                        slackSend(channel: slack?.threadId, message: "Checkout: finalizado com sucesso.\n${currentBuild.changeSets.join('\n')}")
+                        def changeLogSets = ""
+                        for (int i = 0; i < currentBuild.changeSets.size(); i++) {
+                            def entries = currentBuild.changeSets[i].items
+                            for (int j = 0; j < entries.length; j++) {
+                                def entry = entries[j]
+                                changeLogSets += "${entry.commitId} by ${entry.author} on ${new Date(entry.timestamp)}: ${entry.msg}\n"
+                                def files = new ArrayList(entry.affectedFiles)
+                                for (int k = 0; k < files.size(); k++) {
+                                    def file = files[k]
+                                    changeLogSets += "    ${file.editType.name} ${file.path}\n"
+                                }
+                            }
+                        }
+                        slackSend(channel: slack?.threadId, 
+                            message: "Checkout: finalizado com sucesso.\n${changeLogSets}")
                     }
                 }
                 failure {
@@ -209,26 +245,24 @@ pipeline {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
-                    def _name = "dev-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
+                    _environments.dev.name = "dev-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${data.project_id}
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
                     """
-                    def _revisions = readJSON(text:sh(
-                        script: """
-                            gcloud run revisions list \
-                                --service ${_name} \
-                                --format json \
-                                --platform managed \
-                                --region ${env.GOOGLE_REGION}
+                    _environments.dev.prev = readJSON(text:sh(
+                        script: """ gcloud run revisions list \
+                            --service ${_environments.dev.name} \
+                            --format json \
+                            --platform managed \
+                            --region ${env.GOOGLE_REGION}
                         """, 
                         returnStdout : true
-                    ).trim())
-                    println _revisions
+                    ).trim())?.first()?.metadata?.name
                     sh """
-                        gcloud run deploy ${_name} \
+                        gcloud run deploy ${_environments.dev.name} \
                             --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
                             --platform managed \
                             --memory 2Gi \
@@ -237,29 +271,26 @@ pipeline {
                             --max-instances 3 \
                             --cpu 1000m \
                             --port 9501 \
-                            --labels "name=${_name}" \
+                            --labels "name=${_environments.dev.name}" \
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
                             --set-env-vars "APP_ENV=development"
                     """
-                    
-                    def service = readJSON(text: sh(script: """
-                        gcloud run services describe ${_name} \
+                    def _service = readJSON(text: sh(script: """
+                        gcloud run services describe ${_environments.dev.name} \
                             --platform managed \
                             --region ${env.GOOGLE_REGION} \
                             --format json
                         """, returnStdout : true).trim()
                     )
-
-                    url.dev = service.status.address.url
-
+                    _environments.dev.url = _service.status.address.url
                 }
             }
             post {
                 success {
                     script {
-                        slackSend(channel: slack?.threadId, message: "Development Deploy: finalizado com sucesso. Url: ${url.dev}")
+                        slackSend(channel: slack?.threadId, message: "Development Deploy: finalizado com sucesso. Url: ${_environments.dev.url}")
                     }
                 }
                 failure {
@@ -273,7 +304,7 @@ pipeline {
                 stage("healthz") {
                     steps {
                         script {
-                            sh """ curl -X GET -H "Content-type: application/json" ${url.dev}/health """ 
+                            sh """ curl -X GET -H "Content-type: application/json" ${_environments.dev.url}/health """ 
                         }
                     }
                 }
@@ -291,7 +322,7 @@ pipeline {
                             def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.dev}".toString()
+                                    pe.value = "${_environments.dev.url}".toString()
                                 }
                             }
 
@@ -303,7 +334,7 @@ pipeline {
                                 )
                             )
 
-                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            echo "Aplicação publicada com sucesso: ${_environments.dev.url}" 
                             sh """
                                 newman run \
                                     ${pwd()}/tests/smoke/baseline_graphql_siler_smoke.postman_collection.json \
@@ -331,7 +362,7 @@ pipeline {
                             def _newmanEnv = readJSON file: "${pwd()}/tests/functional/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
-                                    pe.value = "${url.dev}".toString()
+                                    pe.value = "${_environments.dev.url}".toString()
                                 }
                             }
 
@@ -343,7 +374,7 @@ pipeline {
                                 )
                             )
 
-                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            echo "Aplicação publicada com sucesso: ${_environments.dev.url}" 
                             sh """
                                 newman run \
                                     ${pwd()}/tests/functional/baseline_graphql_siler_functional.postman_collection.json \
@@ -382,7 +413,7 @@ pipeline {
                                     --quiet \
                                     -o modules.console.disable=true \
                                     -o settings.verbose=false \
-                                    -o settings.env.HOSTNAME="${url.dev}"
+                                    -o settings.env.HOSTNAME="${_environments.dev.url}"
                                 chown ${env.JKS_USERID}:${env.JKS_GROUPID} * -R
                             """
                         }
@@ -392,7 +423,7 @@ pipeline {
             post {
                 success {
                     script {
-                        echo "Aplicação publicada e validada com sucesso em desenvolvimento: ${url.dev}" 
+                        echo "Aplicação publicada e validada com sucesso em desenvolvimento: ${_environments.dev.url}" 
                         slackSend(channel: slack?.threadId, message: "Validate Development: finalizado com sucesso")
                     }
                 }
@@ -411,8 +442,7 @@ pipeline {
                     script {
                         slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de homologação.")
                     }
-                
-                    timeout(time: 2, unit: 'HOURS') {
+                    timeout(time: 1, unit: 'HOURS') {
                         input message: 'Approve Deploy on Homologation?', ok: 'Yes'
                     }
                 }
@@ -542,7 +572,7 @@ pipeline {
                                 )
                             )
 
-                            echo "Aplicação publicada com sucesso: ${url.dev}" 
+                            echo "Aplicação publicada com sucesso: ${_environments.dev.url}" 
                             sh """
                                 newman run \
                                     ${pwd()}/tests/functional/baseline_graphql_siler_functional.postman_collection.json \
@@ -579,7 +609,7 @@ pipeline {
                                     --quiet \
                                     -o modules.console.disable=true \
                                     -o settings.verbose=false \
-                                    -o settings.env.HOSTNAME="${url.dev}"
+                                    -o settings.env.HOSTNAME="${_environments.dev.url}"
                                 chown ${env.JKS_USERID}:${env.JKS_GROUPID} * -R
                             """
                         }
