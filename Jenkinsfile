@@ -603,7 +603,7 @@ pipeline {
         stage ('Approval Production Deploy') {
             steps {
                 script {
-                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de produção.\nlink:${enb.BUILD_URL}/input")
+                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de produção.\nlink:${env.BUILD_URL}/input")
                     timeout(time: 1, unit: 'HOURS') {
                         input message: 'Aprovar a implantação em produção?', ok: 'Yes'
                     }
