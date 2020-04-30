@@ -222,15 +222,19 @@ pipeline {
                         gcloud config set compute/zone ${env.GOOGLE_ZONE}
                         gcloud auth activate-service-account ${data.client_email} --key-file=${env.GOOGLE_APPLICATION_CREDENTIALS} --project=${data.project_id}
                     """
-                    _environments.dev.prev = readJSON(text:sh(
-                        script: """ gcloud run revisions list \
-                            --service ${_environments.dev.name} \
-                            --format json \
-                            --platform managed \
-                            --region ${env.GOOGLE_REGION}
-                        """, 
-                        returnStdout : true
-                    ).trim())?.first()?.metadata?.name
+                    try{
+                        _environments.dev.prev = readJSON(text:sh(
+                            script: """ gcloud run revisions list \
+                                --service ${_environments.dev.name} \
+                                --format json \
+                                --platform managed \
+                                --region ${env.GOOGLE_REGION}
+                            """, 
+                            returnStdout : true
+                        ).trim())?.first()?.metadata?.name
+                    } catch (e) {
+                        _environments.dev.prev = ""
+                    }
                     sh """
                         gcloud run deploy ${_environments.dev.name} \
                             --image ${env.REGISTRY_HOST}snapshot/${env.APP_NAME}:${env.APP_VERSION} \
