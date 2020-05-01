@@ -129,6 +129,15 @@ pipeline {
             }
             post {
                 success {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [
+                            [path: "tests/unit/_reports/logs/"]
+                        ]
+                    ])
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Testes realizados com sucesso.")
                 }
                 failure {
