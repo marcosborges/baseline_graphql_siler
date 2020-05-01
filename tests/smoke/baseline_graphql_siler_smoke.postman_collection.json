@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "smoke-test",
+			"name": "smoke:simple-test",
 			"event": [
 				{
 					"listen": "test",

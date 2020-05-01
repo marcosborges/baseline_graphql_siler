@@ -1,10 +1,10 @@
 execution:
 - concurrency: 2
   hold-for: 10s
-  scenario: quick-test
+  scenario: load-test
 
 scenarios:
-  quick-test:
+  load-test:
     requests:
     - url : ${HOSTNAME}/graphql
       method: POST
