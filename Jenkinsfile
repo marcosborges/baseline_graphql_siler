@@ -415,9 +415,8 @@ pipeline {
 
         stage ( 'Approval Homologation Deploy' ) {
             steps {
-                slackSend( color : "#ffb833",  channel: slack?.threadId, message: "Solicitação de aprovação para implantar a nova versão em homologação.\nlink: ${env.BUILD_URL}/input")
+                slackSend(notifyCommitters : true, color : "#ffb833",  channel: slack?.threadId, message: "Solicitação de aprovação para implantar a nova versão em homologação.\nlink: ${env.BUILD_URL}/input")
                 script {
-                    slackSend(channel: slack?.threadId, message: "Solicitando aprovação para entregar no ambiente de homologação")
                     timeout(time: 1, unit: 'HOURS') {
                         input message: 'Aprovar a implantação em homologação?', ok: 'Sim'
                     }
@@ -621,7 +620,7 @@ pipeline {
 
         stage ('Approval Production Deploy') {
             steps {
-                slackSend( color : "#ffb833",  channel: slack?.threadId, message: "Solicitação de aprovação para implantar a nova versão no ambiente de produção.\nlink: ${env.BUILD_URL}/input")
+                slackSend( notifyCommitters : true, color : "#ffb833",  channel: slack?.threadId, message: "Solicitação de aprovação para implantar a nova versão no ambiente de produção.\nlink: ${env.BUILD_URL}/input")
                 script {
                     timeout(time: 1, unit: 'HOURS') {
                         input message: 'Aprovar a implantação em produção?', ok: 'Sim'
