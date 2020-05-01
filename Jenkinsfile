@@ -244,7 +244,7 @@ pipeline {
             } 
         }
 
-        /*stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
+        /*stage( 'DB Migration (Development)') { steps {  echo "TODO" } }*/
 
         stage ( 'Deploy (Development)' ) {
             steps {
@@ -480,7 +480,7 @@ pipeline {
             } 
         }
 
-        /*stage('DB Migration (Homologation)') { steps {  echo "OK" } }*/
+        /*stage('DB Migration (Homologation)') { steps {  echo "TODO" } }*/
 
         stage ( 'Deploy (Homologation)' ) {
             steps {
@@ -710,7 +710,7 @@ pipeline {
             } 
         }
 
-        /*stage('DB Migration (Production)') { steps {  echo "OK" } }*/
+        /*stage('DB Migration (Production)') { steps {  echo "TODO" } }*/
 
         stage ( 'Deploy (Production)' ) {
             steps {
