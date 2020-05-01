@@ -3,6 +3,7 @@ import groovy.json.JsonOutput
 def container
 def commit
 def commitChangeset
+def changeLogSets = ""
 def _environments = [
     dev : [
         name : "",
@@ -61,27 +62,24 @@ pipeline {
                     )
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
+                    for (int i = 0; i < currentBuild.changeSets.size(); i++) {
+                        def entries = currentBuild.changeSets[i].items
+                        for (int j = 0; j < entries.length; j++) {
+                            def entry = entries[j]
+                            changeLogSets += "${entry.msg} \nby ${entry.author}\n(${new Date(entry.timestamp)})\n\n"
+                            def files = new ArrayList(entry.affectedFiles)
+                            for (int k = 0; k < files.size(); k++) {
+                                def file = files[k]
+                                //changeLogSets += "    ${file.editType.name} ${file.path}\n"
+                            }
+                        }
+                    }
                 }
                 stash includes: '**/*', name: 'checkoutSources'
             }
             post {
                 success {
-                    script {
-                        def changeLogSets = ""
-                        for (int i = 0; i < currentBuild.changeSets.size(); i++) {
-                            def entries = currentBuild.changeSets[i].items
-                            for (int j = 0; j < entries.length; j++) {
-                                def entry = entries[j]
-                                changeLogSets += "${entry.msg} \nby ${entry.author}\n(${new Date(entry.timestamp)})\n\n"
-                                def files = new ArrayList(entry.affectedFiles)
-                                for (int k = 0; k < files.size(); k++) {
-                                    def file = files[k]
-                                    //changeLogSets += "    ${file.editType.name} ${file.path}\n"
-                                }
-                            }
-                        }
-                        slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Os fontes da aplicação foram obtidos com sucesso. Confira o change-log:\n${changeLogSets}")
-                    }
+                    slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Os fontes da aplicação foram obtidos com sucesso. Confira o change-log:\n${changeLogSets}")
                 }
                 failure {
                     slackSend(color: "#540c05",  channel: slack?.threadId, message: "Falha ao obter os fontes da aplicação.\nLink: ${env.BUILD_URL}")
