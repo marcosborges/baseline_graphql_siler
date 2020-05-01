@@ -651,6 +651,16 @@ pipeline {
             }
             post {
                 success {
+                    junit "tests/functional/_report/*.xml"
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [
+                            [path: "tests/functional/_report/"]
+                        ]
+                    ])
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Validação da implantação no *ambiente de homologação* realizada com sucesso.")
                 }
                 failure {
