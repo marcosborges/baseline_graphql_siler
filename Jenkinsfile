@@ -138,6 +138,7 @@ pipeline {
                             [path: "tests/unit/_reports/logs/"]
                         ]
                     ])
+                    junit "tests/unit/_reports/logs/junit.xml"
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Testes realizados com sucesso.")
                 }
                 failure {
