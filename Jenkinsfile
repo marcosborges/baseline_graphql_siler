@@ -283,7 +283,9 @@ pipeline {
         stage ( 'Validation (Development)' ) {
             parallel {
                 stage ("notify") {
-                    slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Validando a nova implantação no ambiente de desenvolvimento.")
+                    steps {
+                        slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Validando a nova implantação no ambiente de desenvolvimento.")
+                    }
                 }
                 stage("healthz") {
                     steps {
@@ -478,7 +480,9 @@ pipeline {
         stage ('Validation (Homologation)') {
             parallel {
                 stage ("notify") {
-                    slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Validando a nova versão no ambiente de homologação.")
+                    steps {
+                        slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Validando a nova versão no ambiente de homologação.")
+                    }
                 }
                 stage("healthz") {
                     steps {
@@ -680,7 +684,9 @@ pipeline {
         stage('Validation (Production)') {
             parallel {
                 stage ("notify") {
-                    slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Validando a nova versão no ambiente de produção.")
+                    steps {
+                        slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Validando a nova versão no ambiente de produção.")
+                    }
                 }
                 stage("healthz") {
                     steps {
