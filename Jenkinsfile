@@ -50,6 +50,7 @@ pipeline {
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
+                    println teste()
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                     slack = slackSend(
@@ -800,4 +801,8 @@ pipeline {
             slackSend(color: "#540c05", channel: slack?.threadId, message: "Falha ao realizar o *processo de CI/CD*!")
         }
     }
+}
+
+def teste() {
+    "Teste"
 }
