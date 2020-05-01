@@ -800,17 +800,15 @@ pipeline {
             //junit "tests/_reports/**/*.xml"
 
             //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
-            
-            
 
-            /*publishHTML target: [
+            publishHTML target: [
                 allowMissing: false,
                 alwaysLinkToLastBuild: false,
                 keepAll: true,
-                reportDir: 'tests/_reports/coverage',
+                reportDir: 'tests/unit/_reports/coverage',
                 reportFiles: 'index.html',
                 reportName: 'Coverage'
-            ]*/
+            ]
         }
 
         failure {
