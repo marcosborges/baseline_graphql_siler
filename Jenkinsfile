@@ -48,17 +48,17 @@ pipeline {
         
         stage ( 'Checkout Sources' ) {
             steps {
-                slack = slackSend(
-                    color : "#162e63",
-                    message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
-                    "*App:* ${env.APP_NAME}\n" +
-                    "*Version:* ${env.APP_VERSION}\n" +
-                    "*Commit:* ${commit}\n" +
-                    "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName}\n" +
-                    "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
-                    "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
-                )
                 script {
+                    slack = slackSend(
+                        color : "#162e63",
+                        message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
+                        "*App:* ${env.APP_NAME}\n" +
+                        "*Version:* ${env.APP_VERSION}\n" +
+                        "*Commit:* ${commit}\n" +
+                        "*User:* ${currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName}\n" +
+                        "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
+                        "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
+                    )
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                 }
