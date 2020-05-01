@@ -221,7 +221,8 @@ pipeline {
                 }
             } 
         }
-        stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
+        
+        /*stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
 
         stage ( 'Deploy (Development)' ) {
             steps {
