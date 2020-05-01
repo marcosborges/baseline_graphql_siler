@@ -8,17 +8,20 @@ def _environments = [
     dev : [
         name : "",
         url : "",
-        prev : ""
+        prev : "",
+        envFile : ""
     ],
     uat : [
         name : "",
         url : "",
-        prev : ""
+        prev : "",
+        envFile : ""
     ],
     prd : [
         name : "",
         url : "",
-        prev : ""
+        prev : "",
+        envFile : ""
     ]
 ]
 def slack
@@ -217,11 +220,11 @@ pipeline {
             steps {   
                 echo "OK" 
                 script {
-                    requestEnv(env.APP_NAME, "development")
+                    _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
                 }
             } 
         }
-        
+
         /*stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
 
         stage ( 'Deploy (Development)' ) {
