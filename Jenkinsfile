@@ -412,6 +412,15 @@ pipeline {
             }                
             post {
                 success {
+                    allure([
+                        includeProperties: false,
+                        jdk: 'JDK8',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [
+                            [path: "tests/functional/_reports/"]
+                        ]
+                    ])
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Validação da implantação no *ambiente de desenvolvimento* realizada com sucesso.")
                 }
                 failure {
@@ -480,7 +489,7 @@ pipeline {
             }
         }
 
-        stage ('Validation (Homologation)') {
+        stage ( 'Validation (Homologation)' ) {
             parallel {
                 stage ("notify") {
                     steps {
@@ -611,7 +620,7 @@ pipeline {
             }
         }
         
-        stage ('Release Registry') {
+        stage ( 'Release Registry' ) {
             steps {
                 slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Promovendo e registrando o container no registrador de lançamentos. Link: https://${env.REGISTRY_HOST}release")
                 script {
@@ -632,7 +641,7 @@ pipeline {
             }
         }
 
-        stage ('Approval Production Deploy') {
+        stage ( 'Approval Production Deploy' ) {
             steps {
                 slackSend( notifyCommitters : true, color : "#ffb833",  channel: slack?.threadId, message: "Solicitação de aprovação para implantar a nova versão no ambiente de produção.\nlink: ${env.BUILD_URL}input")
                 script {
@@ -646,7 +655,7 @@ pipeline {
         /*stage('AppConfig (Production)') { steps {  echo "OK" } }
         stage('DB Migration (Production)') { steps {  echo "OK" } }*/
 
-        stage('Deploy (Production)') {
+        stage ( 'Deploy (Production)' ) {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
@@ -691,7 +700,7 @@ pipeline {
             }
         }
 
-        stage('Validation (Production)') {
+        stage( 'Validation (Production)' ) {
             parallel {
                 stage ("notify") {
                     steps {
@@ -764,30 +773,19 @@ pipeline {
         }
 
         success {
-            echo 'The Pipeline success :)'
-            /*
-            script {
+            slackSend(color: "#073d15", channel: slack?.threadId, message: "*Processo de CI/CD* finalizado com sucesso!")
+            
+            /*script {
                 sh "zip -r dist.zip ./"
-            }
-            */
+            }*/
 
             //junit "tests/_reports/**/*.xml"
 
             //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
             
-            /*
-            allure([
-                includeProperties: false,
-                jdk: 'JDK8',
-                properties: [],
-                reportBuildPolicy: 'ALWAYS',
-                results: [
-                    [path: "tests/_reports/logs/"]
-                ]
-            ])
-            */
-            /*
-            publishHTML target: [
+            
+
+            /*publishHTML target: [
                 allowMissing: false,
                 alwaysLinkToLastBuild: false,
                 keepAll: true,
@@ -798,7 +796,7 @@ pipeline {
         }
 
         failure {
-            echo 'The Pipeline failed :('
+            slackSend(color: "#540c05", channel: slack?.threadId, message: "Falha ao realizar o *processo de CI/CD*!")
         }
     }
 }
