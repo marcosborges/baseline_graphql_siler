@@ -411,6 +411,8 @@ pipeline {
             post {
                 success {
                     unstash 'testFuncDevSources'
+                    junit "tests/functional/_reports/*.xml"
+
                     allure([
                         includeProperties: false,
                         jdk: '',
