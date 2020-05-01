@@ -348,7 +348,6 @@ pipeline {
                     steps {
                         unstash 'checkoutSources'
                         script {
-
                             def _newmanEnv = readJSON file: "${pwd()}/tests/functional/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
@@ -363,8 +362,6 @@ pipeline {
                                     _newmanEnv
                                 )
                             )
-
-                            echo "Aplicação publicada com sucesso: ${_environments.dev.url}" 
                             sh """
                                 newman run \
                                     ${pwd()}/tests/functional/baseline_graphql_siler_functional.postman_collection.json \
@@ -376,6 +373,7 @@ pipeline {
                                         --disable-unicode 
                             """
                         }
+                        stash includes: 'tests/functional/_report/*', name: 'testFuncDevSources'
                     }
                 }
                 /*stage("security") {
@@ -412,9 +410,10 @@ pipeline {
             }                
             post {
                 success {
+                    unstash 'testFuncDevSources'
                     allure([
                         includeProperties: false,
-                        jdk: 'JDK8',
+                        jdk: '',
                         properties: [],
                         reportBuildPolicy: 'ALWAYS',
                         results: [
