@@ -80,7 +80,7 @@ pipeline {
             }
             post {
                 success {
-                    slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Os fontes da aplicação foram obtidos com sucesso. Confira o change-log:\n${changeLogSets}")
+                    slackSend( color : "#073d15",  channel: slack?.threadId, message: "Os fontes da aplicação foram obtidos com sucesso. Confira o change-log:\n${changeLogSets}")
                 }
                 failure {
                     slackSend(color: "#540c05",  channel: slack?.threadId, message: "Falha ao obter os fontes da aplicação.\nLink: ${env.BUILD_URL}")
