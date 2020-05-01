@@ -483,7 +483,13 @@ pipeline {
                 stage("healthz") {
                     steps {
                         script {
-                            sh """ curl -X GET -H "Content-type: application/json" ${_environments.uat.url}/health """ 
+                            httpRequest(
+                                url : "${_environments.uat.url}/health",
+                                httpMode : "GET",
+                                acceptType : "APPLICATION_JSON",
+                                contentType : "APPLICATION_JSON"
+                            )
+                            //sh """ curl -X GET -H "Content-type: application/json"  """ 
                         }
                     }
                 }
