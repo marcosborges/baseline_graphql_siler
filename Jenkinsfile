@@ -45,10 +45,6 @@ pipeline {
         GOOGLE_ZONE = "us-east1-a"
     }
 
-    triggers {
-        pollSCM('H/5 * * *')
-    }
-
     stages {
         
         stage ( 'Checkout Sources' ) {
