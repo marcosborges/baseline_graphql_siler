@@ -51,6 +51,7 @@ pipeline {
             steps {
                 script {
                     slack = slackSend(
+                        notifyCommitters : true,
                         color : "#162e63",
                         message: "Iniciando uma nova entrega, segue links para mais informações:\n" +
                         "*App:* ${env.APP_NAME}\n" +
