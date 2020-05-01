@@ -785,7 +785,13 @@ pipeline {
         }
 
         success {
-            slackSend(color: "#073d15", channel: slack?.threadId, message: "*Processo de CI/CD* finalizado com sucesso!")
+            slackSend(color: "#073d15", channel: slack?.threadId, message: "*Processo de CI/CD* finalizado com sucesso!\n\n" +
+                "Para mais detalhes acesse os links abaixo:\n" +
+                "*Sonar:* https://sonarcloud.io/dashboard?id=${env.SONAR_PROJECT_KEY}\n" +
+                "*Testes:* ${env.JOB_URL}allure\n" +
+                "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
+                "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
+            )
             
             /*script {
                 sh "zip -r dist.zip ./"
