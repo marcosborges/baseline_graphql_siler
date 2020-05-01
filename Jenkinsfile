@@ -789,6 +789,7 @@ pipeline {
                 "Para mais detalhes acesse os links abaixo:\n" +
                 "*Sonar:* https://sonarcloud.io/dashboard?id=${env.SONAR_PROJECT_KEY}\n" +
                 "*Testes:* ${env.JOB_URL}allure\n" +
+                "*Cobertura:* ${env.JOB_URL}allure\n" +
                 "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                 "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
             )
