@@ -50,7 +50,6 @@ pipeline {
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
-                    println teste()
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                     slack = slackSend(
@@ -214,7 +213,14 @@ pipeline {
             }
         }
         
-        /*stage( 'AppConfig (Development)') { steps {   echo "OK" } }
+        stage( 'AppConfig (Development)') { 
+            steps {   
+                echo "OK" 
+                script {
+                    requestEnv(env.APP_NAME, "development")
+                }
+            } 
+        }
         stage( 'DB Migration (Development)') { steps {  echo "OK" } }*/
 
         stage ( 'Deploy (Development)' ) {
@@ -803,6 +809,18 @@ pipeline {
     }
 }
 
-def teste() {
-    "Teste"
+def requestEnv(name, environment) {
+    def envFile
+    try{
+        envFile = credentials("${name}.${environment}".toLowerCase())
+        println "SUCESS:${envFile}"
+    } catch (e) {
+        println "ERRO:${e.getMessage()}"
+        /*
+        input("credential")
+        store()
+        envFile = credentials("${name}.${environment}".toLowerCase())
+        */
+    }
+    envFile
 }
