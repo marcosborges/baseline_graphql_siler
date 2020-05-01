@@ -129,6 +129,14 @@ pipeline {
             }
             post {
                 success {
+                    publishHTML target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'tests/unit/_reports/coverage',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage'
+                    ]
                     allure([
                         includeProperties: false,
                         jdk: '',
@@ -461,9 +469,17 @@ pipeline {
                 }
             }
         }
+        
+        stage ('AppConfig (Homologation)') { 
+            steps {   
+                echo "OK" 
+                script {
+                    _environments.uat.envFile = requestEnv(env.APP_NAME, "homologation")
+                }
+            } 
+        }
 
-        /*stage('AppConfig (Homologation)') { steps {  echo "OK" } }
-        stage('DB Migration (Homologation)') { steps {  echo "OK" } }*/
+        /*stage('DB Migration (Homologation)') { steps {  echo "OK" } }*/
 
         stage ( 'Deploy (Homologation)' ) {
             steps {
@@ -674,8 +690,16 @@ pipeline {
             }
         }
 
-        /*stage('AppConfig (Production)') { steps {  echo "OK" } }
-        stage('DB Migration (Production)') { steps {  echo "OK" } }*/
+        stage ( 'AppConfig (Production)' ) { 
+            steps {   
+                echo "OK" 
+                script {
+                    _environments.uat.envFile = requestEnv(env.APP_NAME, "production")
+                }
+            } 
+        }
+
+        /*stage('DB Migration (Production)') { steps {  echo "OK" } }*/
 
         stage ( 'Deploy (Production)' ) {
             steps {
@@ -812,14 +836,7 @@ pipeline {
 
             //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
 
-            publishHTML target: [
-                allowMissing: false,
-                alwaysLinkToLastBuild: false,
-                keepAll: true,
-                reportDir: 'tests/unit/_reports/coverage',
-                reportFiles: 'index.html',
-                reportName: 'Coverage'
-            ]
+            
         }
 
         failure {
