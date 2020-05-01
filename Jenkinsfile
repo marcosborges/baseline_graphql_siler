@@ -833,8 +833,9 @@ pipeline {
             slackSend(color: "#073d15", channel: slack?.threadId, message: "*Processo de CI/CD* finalizado com sucesso!\n\n" +
                 "Para mais detalhes acesse os links abaixo:\n" +
                 "*Sonar:* https://sonarcloud.io/dashboard?id=${env.SONAR_PROJECT_KEY}\n" +
-                "*Testes:* ${env.JOB_URL}allure\n" +
-                "*Cobertura:* ${env.JOB_URL}allure\n" +
+                "*Testes:*\n - ${env.JOB_URL}testReport\n" +
+                " - ${env.JOB_URL}allure\n" +
+                "*Cobertura:* ${env.JOB_URL}Coverage\n" +
                 "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                 "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
             )
