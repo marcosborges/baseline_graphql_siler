@@ -411,7 +411,7 @@ pipeline {
             post {
                 success {
                     unstash 'testFuncDevSources'
-                    junit "tests/functional/_reports/*.xml"
+                    junit "tests/functional/_report/*.xml"
 
                     allure([
                         includeProperties: false,
@@ -419,7 +419,7 @@ pipeline {
                         properties: [],
                         reportBuildPolicy: 'ALWAYS',
                         results: [
-                            [path: "tests/functional/_reports/"]
+                            [path: "tests/functional/_report/"]
                         ]
                     ])
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Validação da implantação no *ambiente de desenvolvimento* realizada com sucesso.")
