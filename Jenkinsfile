@@ -291,7 +291,8 @@ pipeline {
                                 url : "${_environments.dev.url}/health",
                                 httpMode : "GET",
                                 acceptType : "APPLICATION_JSON",
-                                contentType : "APPLICATION_JSON"
+                                contentType : "APPLICATION_JSON",
+                                validResponseCodes : "200"
                             )
                             //sh """ curl -X GET -H "Content-type: application/json" ${_environments.dev.url}/health """ 
                         }
@@ -493,7 +494,8 @@ pipeline {
                                 url : "${_environments.uat.url}/health",
                                 httpMode : "GET",
                                 acceptType : "APPLICATION_JSON",
-                                contentType : "APPLICATION_JSON"
+                                contentType : "APPLICATION_JSON",
+                                validResponseCodes : "200"
                             )
                             //sh """ curl -X GET -H "Content-type: application/json"  """ 
                         }
