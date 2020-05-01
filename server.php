@@ -3,14 +3,14 @@
 
 use Siler\Route;
 use Siler\Functional as λ;
-use function Siler\Swoole\{graphql_handler, http};
+use function Siler\Swoole\{graphql_handler, http, json};
 
 require_once __DIR__ . '/bootstrap.php';
 global $schema, $root_value, $context;
 
 $handler = graphql_handler($schema, $root_value, $context);
 $server = function () use ($handler): void {
-    Route\get('/health', λ\puts('{"status":"ok"}'));
+    Route\get('/health', json(['status' => 'ok']));
     Route\post('/graphql', $handler);
 };
 
