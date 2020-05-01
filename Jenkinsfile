@@ -50,6 +50,8 @@ pipeline {
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
+                    commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
+                    commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                     slack = slackSend(
                         notifyCommitters : true,
                         color : "#162e63",
@@ -61,8 +63,6 @@ pipeline {
                         "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                         "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
                     )
-                    commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
-                    commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                     for (int i = 0; i < currentBuild.changeSets.size(); i++) {
                         def entries = currentBuild.changeSets[i].items
                         for (int j = 0; j < entries.length; j++) {
