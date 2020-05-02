@@ -44,7 +44,6 @@ pipeline {
         SONAR_ORGANIZATION_KEY = "baseline-graphql-siler"
         REGISTRY_HOST = credentials('REGISTRY_HOST')
         GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SERVICE_ACCOUNT')
-        XXX = credentials('XXXX')
         GOOGLE_REGION = "us-east1"
         GOOGLE_ZONE = "us-east1-a"
     }
