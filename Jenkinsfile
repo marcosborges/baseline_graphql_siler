@@ -898,7 +898,7 @@ def requestEnv(name, environment) {
                     name: "CREDENTIAL_C"
                 ],
                 [
-                    $class: "ChoicesParameterDefinition", 
+                    $class: "ChoiceParameterDefinition", 
                     choices : "a\nb",
                     description: "", 
                     name: "CREDENTIAL_d"
