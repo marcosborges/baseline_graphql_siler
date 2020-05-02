@@ -290,7 +290,7 @@ pipeline {
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
-                            --update-env-vars "${envDataColl.join(',')}"
+                            --set-env-vars "${envDataColl.join(',')}"
                     """
                     def _service = readJSON(text: sh(script: """
                         gcloud run services describe ${_environments.dev.name} \
