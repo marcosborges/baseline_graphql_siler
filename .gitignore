@@ -2,4 +2,3 @@ vendor/
 tests/_reports/
 composer.lock
 tests/load/tmp
-composer.lock
