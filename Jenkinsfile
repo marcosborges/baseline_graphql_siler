@@ -1,4 +1,9 @@
 import groovy.json.JsonOutput
+import org.jenkinsci.plugins.credentialsbinding.impl.CredentialNotFoundException
+import hudson.util.Secret
+import com.cloudbees.plugins.credentials.CredentialsScope
+import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
+import com.cloudbees.plugins.credentials.domains.Domain
 
 def container
 def commit
@@ -857,17 +862,49 @@ pipeline {
 }
 
 def requestEnv(name, environment) {
-    def envFile
+    
     try{
-        envFile = credentials("${name}.${environment}".toLowerCase())
-        println "SUCESS:${envFile}"
-    } catch (e) {
-        println "ERRO:${e.getMessage()}"
+        withCredentials([
+            file(
+                credentialsId: "${name}.${environment}".toLowerCase(), 
+                variable: "${name}.${environment}".toUpperCase()
+            )
+        ]) {
+            println "Credentials finded"
+        }
+    } catch (CredentialNotFoundException e) {
+        
+        def askqued = input (
+            id: "CREDENTIALS", 
+            message: "Enter the credentials.",
+            parameters: [
+                [
+                    $class: "FileParameterDefinition", 
+                    defaultValue: "", 
+                    description: "", 
+                    name: "CREDENTIAL_A"
+                ]
+            ]
+        )
+        
         /*
-        input("credential")
-        store()
-        envFile = credentials("${name}.${environment}".toLowerCase())
+        def store = Jenkins.getInstance().getExtensionList (
+            'com.cloudbees.plugins.credentials.SystemCredentialsProvider'
+        )[0].getStore()
+
+        for (resp in askqued) {
+            def secretText = new StringCredentialsImpl(
+                CredentialsScope.GLOBAL,
+                resp.key,
+                "",
+                Secret.fromString(resp.key)
+            )
+            store.addCredentials(Domain.global(), secretText)
+        }
         */
     }
-    envFile
+
+
+
+
 }
