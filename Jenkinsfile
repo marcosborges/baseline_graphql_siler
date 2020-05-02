@@ -879,8 +879,7 @@ def requestEnv(name, environment) {
             message: "Enter the credentials.",
             parameters: [
                 [
-                    $class: "FileParameterDefinition", 
-                    defaultValue: "", 
+                    $class: "TextParameterDefinition", 
                     description: "", 
                     name: "CREDENTIAL_A"
                 ]
