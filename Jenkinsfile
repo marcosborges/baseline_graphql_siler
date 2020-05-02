@@ -60,7 +60,7 @@ pipeline {
                 script {
                     _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
                 }
-                
+
                 script {
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
@@ -899,7 +899,7 @@ def requestEnv(name, environment) {
                 ],
                 [
                     $class: "ChoicesParameterDefinition", 
-                    cloices : "a\nb"
+                    cloices : "a\nb",
                     description: "", 
                     name: "CREDENTIAL_d"
                 ]
