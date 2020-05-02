@@ -58,6 +58,10 @@ pipeline {
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
+                    _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
+                }
+                
+                script {
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                     slack = slackSend(
@@ -84,6 +88,7 @@ pipeline {
                         }
                     }
                 }
+
                 stash includes: '**/*', name: 'checkoutSources'
             }
             post {
@@ -242,7 +247,6 @@ pipeline {
         
         stage( 'AppConfig (Development)') { 
             steps {   
-                echo "OK" 
                 script {
                     _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
                 }
@@ -882,6 +886,22 @@ def requestEnv(name, environment) {
                     $class: "TextParameterDefinition", 
                     description: "", 
                     name: "CREDENTIAL_A"
+                ],
+                [
+                    $class: "StringParameterDefinition", 
+                    description: "", 
+                    name: "CREDENTIAL_B"
+                ],
+                [
+                    $class: "BooleanParameterDefinition", 
+                    description: "", 
+                    name: "CREDENTIAL_C"
+                ],
+                [
+                    $class: "ChoicesParameterDefinition", 
+                    cloices : "a\nb"
+                    description: "", 
+                    name: "CREDENTIAL_d"
                 ]
             ]
         )
