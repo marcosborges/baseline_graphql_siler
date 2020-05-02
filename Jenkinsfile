@@ -61,9 +61,7 @@ pipeline {
             steps {
                 script {
                     currentBuild.description = 'line 1\nline 2\nline 3'
-
                     _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
-
                 }
 
                 script {
@@ -256,6 +254,9 @@ pipeline {
                 script {
                     slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Inicializando a implantação no ambiente de desenvolvimento.")
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
+                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_DEV, text: ''
+                    def envDataColl = envData.collect{it -> "${it.key}=${it.value}" }
+
                     _environments.dev.name = "dev-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
@@ -290,7 +291,7 @@ pipeline {
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
-                            --set-env-vars "APP_ENV=development"
+                            --update-env-vars "${envDataColl.join(',')}"
                     """
                     def _service = readJSON(text: sh(script: """
                         gcloud run services describe ${_environments.dev.name} \
