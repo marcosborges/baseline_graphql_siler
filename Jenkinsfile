@@ -255,7 +255,7 @@ pipeline {
                     slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Inicializando a implantação no ambiente de desenvolvimento.")
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
                     def envData = readProperties defaults: [:], file: env.APP_ENVFILE_DEV, text: ''
-                    def envDataColl = envData.collect{it -> "${it.key}=${it.value}" }
+                    def envDataColl = envData.collect{ "${it.key}=${it.value}" }
 
                     _environments.dev.name = "dev-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
