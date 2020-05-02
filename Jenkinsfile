@@ -44,6 +44,7 @@ pipeline {
         SONAR_ORGANIZATION_KEY = "baseline-graphql-siler"
         REGISTRY_HOST = credentials('REGISTRY_HOST')
         GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SERVICE_ACCOUNT')
+        XXX = credentials('XXXX')
         GOOGLE_REGION = "us-east1"
         GOOGLE_ZONE = "us-east1-a"
     }
@@ -840,12 +841,11 @@ pipeline {
                 "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
             )
             
+            //junit "tests/_reports/**/*.xml"
+
             /*script {
                 sh "zip -r dist.zip ./"
             }*/
-
-            //junit "tests/_reports/**/*.xml"
-
             //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
 
             
