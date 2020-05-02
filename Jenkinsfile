@@ -37,6 +37,7 @@ pipeline {
     options {
         preserveStashes(buildCount: 10) 
         buildDiscarder(logRotator(numToKeepStr:'10')) 
+        disableConcurrentBuilds()
     }
 
     environment {
