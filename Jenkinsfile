@@ -60,7 +60,7 @@ pipeline {
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
-                    currentBuild.description = "<b>App</b>:${env.APP_NAME}<br><b>Version</b>:${env.APP_VERSION}<br>"
+                    currentBuild.description = "App:${env.APP_NAME}, Version:${env.APP_VERSION}"
                 }
 
                 script {
