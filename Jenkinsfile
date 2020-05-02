@@ -41,16 +41,19 @@ pipeline {
     }
 
     environment {
-        JKS_USERID = sh(script:"""id -u jenkins """, returnStdout: true).trim()
-        JKS_GROUPID = sh(script:"""id -g jenkins """, returnStdout: true).trim()
         APP_NAME = readJSON(file: 'composer.json').name.trim()
         APP_VERSION = readJSON(file: 'composer.json').version.trim()
+        APP_ENVFILE_DEV = credentials('APP_ENVFILE_DEV')
+        APP_ENVFILE_UAT = credentials('APP_ENVFILE_UAT')
+        APP_ENVFILE_PRD = credentials('APP_ENVFILE_PRD')
         SONAR_PROJECT_KEY = "marcosborges_baseline_graphql_siler"
         SONAR_ORGANIZATION_KEY = "baseline-graphql-siler"
         REGISTRY_HOST = credentials('REGISTRY_HOST')
         GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SERVICE_ACCOUNT')
         GOOGLE_REGION = "us-east1"
         GOOGLE_ZONE = "us-east1-a"
+        JKS_USERID = sh(script:"""id -u jenkins """, returnStdout: true).trim()
+        JKS_GROUPID = sh(script:"""id -g jenkins """, returnStdout: true).trim()
     }
 
     stages {
@@ -248,14 +251,6 @@ pipeline {
             }
         }
         
-        stage( 'AppConfig (Development)') { 
-            steps {   
-                script {
-                    _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
-                }
-            } 
-        }
-
         /*stage( 'DB Migration (Development)') { steps {  echo "TODO" } }*/
 
         stage ( 'Deploy (Development)' ) {
@@ -483,15 +478,6 @@ pipeline {
             }
         }
         
-        stage ('AppConfig (Homologation)') { 
-            steps {   
-                echo "OK" 
-                script {
-                    _environments.uat.envFile = requestEnv(env.APP_NAME, "homologation")
-                }
-            } 
-        }
-
         /*stage('DB Migration (Homologation)') { steps {  echo "TODO" } }*/
 
         stage ( 'Deploy (Homologation)' ) {
@@ -713,15 +699,6 @@ pipeline {
             }
         }
 
-        stage ( 'AppConfig (Production)' ) { 
-            steps {   
-                echo "OK" 
-                script {
-                    _environments.uat.envFile = requestEnv(env.APP_NAME, "production")
-                }
-            } 
-        }
-
         /*stage('DB Migration (Production)') { steps {  echo "TODO" } }*/
 
         stage ( 'Deploy (Production)' ) {
@@ -866,73 +843,4 @@ pipeline {
             slackSend(color: "#540c05", channel: slack?.threadId, message: "Falha ao realizar o *processo de CI/CD*!")
         }
     }
-}
-
-def requestEnv(name, environment) {
-    
-    try{
-        withCredentials([
-            file(
-                credentialsId: "${name}.${environment}".toLowerCase(), 
-                variable: "${name}.${environment}".toUpperCase()
-            )
-        ]) {
-            println "Credentials finded"
-        }
-    } catch (CredentialNotFoundException e) {
-        
-        def askqued = input (
-            id: "CREDENTIALS", 
-            message: "Enter the credentials.",
-            parameters: [
-                [
-                    $class: "TextParameterDefinition", 
-                    description: "", 
-                    name: "CREDENTIAL_A"
-                ],
-                [
-                    $class: "StringParameterDefinition", 
-                    description: "", 
-                    name: "CREDENTIAL_B"
-                ],
-                [
-                    $class: "BooleanParameterDefinition", 
-                    description: "", 
-                    name: "CREDENTIAL_C"
-                ],
-                [
-                    $class: "ChoiceParameterDefinition", 
-                    choices : "a\nb",
-                    description: "", 
-                    name: "CREDENTIAL_d"
-                ],
-                [
-                    $class: "PasswordParameterDefinition", 
-                    description: "", 
-                    name: "CREDENTIAL_d"
-                ]
-                
-            ]
-        )
-        
-        /*
-        def store = Jenkins.getInstance().getExtensionList (
-            'com.cloudbees.plugins.credentials.SystemCredentialsProvider'
-        )[0].getStore()
-
-        for (resp in askqued) {
-            def secretText = new StringCredentialsImpl(
-                CredentialsScope.GLOBAL,
-                resp.key,
-                "",
-                Secret.fromString(resp.key)
-            )
-            store.addCredentials(Domain.global(), secretText)
-        }
-        */
-    }
-
-
-
-
 }
