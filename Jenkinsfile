@@ -58,7 +58,10 @@ pipeline {
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
+                    currentBuild.description = 'line 1\nline 2\nline 3'
+
                     _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
+
                 }
 
                 script {
@@ -902,7 +905,13 @@ def requestEnv(name, environment) {
                     choices : "a\nb",
                     description: "", 
                     name: "CREDENTIAL_d"
+                ],
+                [
+                    $class: "PasswordParameterDefinition", 
+                    description: "", 
+                    name: "CREDENTIAL_d"
                 ]
+                
             ]
         )
         
