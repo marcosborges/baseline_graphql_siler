@@ -56,11 +56,11 @@ pipeline {
     }
 
     stages {
-        
+
         stage ( 'Checkout Sources' ) {
             steps {
                 script {
-                    currentBuild.description = 'line 1\nline 2\nline 3'
+                    currentBuild.description = "<b>App</b>:${env.APP_NAME}<br><b>Version</b>:${env.APP_VERSION}<br>"
                 }
 
                 script {
@@ -483,6 +483,8 @@ pipeline {
                 slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Iniciando a implantação da nova versão no ambiente de homologação.")
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
+                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_DEV, text: ''
+                    def envDataColl = envData.collect{ "${it.key}=${it.value}" }
                      _environments.uat.name = "uat-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
@@ -502,7 +504,7 @@ pipeline {
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
-                            --set-env-vars "APP_ENV=development"
+                            --set-env-vars "${envDataColl.join(',')}"
                     """
                     def service = readJSON(text: sh(script: """
                         gcloud run services describe ${_environments.uat.name} \
@@ -703,6 +705,8 @@ pipeline {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
+                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_DEV, text: ''
+                    def envDataColl = envData.collect{ "${it.key}=${it.value}" }
                     _environments.prd.name = "prd-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
                         export GOOGLE_APPLICATION_CREDENTIALS=${env.GOOGLE_APPLICATION_CREDENTIALS}
@@ -722,7 +726,7 @@ pipeline {
                             --region ${env.GOOGLE_REGION} \
                             --allow-unauthenticated \
                             --revision-suffix "${env.APP_VERSION.replace('.','-')}-${commit}" \
-                            --set-env-vars "APP_ENV=development"
+                            --set-env-vars "${envDataColl.join(',')}"
                     """
                     def service = readJSON(text: sh(script: """
                         gcloud run services describe ${_environments.prd.name} \
