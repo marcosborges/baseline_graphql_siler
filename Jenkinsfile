@@ -61,7 +61,6 @@ pipeline {
             steps {
                 script {
                     currentBuild.description = 'line 1\nline 2\nline 3'
-                    _environments.dev.envFile = requestEnv(env.APP_NAME, "development")
                 }
 
                 script {
