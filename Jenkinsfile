@@ -6,8 +6,7 @@ import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
 import com.cloudbees.plugins.credentials.domains.Domain
 
 def container
-def commit
-def commitChangeset
+def commit = ""
 def changeLogSets = ""
 def _environments = [
     dev : [
@@ -69,7 +68,6 @@ pipeline {
 
                 script {
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
-                    commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
                     slack = slackSend(
                         notifyCommitters : true,
                         color : "#162e63",
