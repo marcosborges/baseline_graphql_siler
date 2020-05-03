@@ -138,25 +138,6 @@ pipeline {
             }
             post {
                 success {
-                    publishHTML target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: false,
-                        keepAll: true,
-                        reportDir: 'tests/unit/_reports/coverage',
-                        reportFiles: 'index.html',
-                        reportName: 'Coverage'
-                    ]
-                    /*
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [
-                            [path: "tests/unit/_reports/logs/"]
-                        ]
-                    ])*/
-                    junit "tests/unit/_reports/logs/junit.xml"
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Testes realizados com sucesso.")
                 }
                 failure {
@@ -443,18 +424,6 @@ pipeline {
             }                
             post {
                 success {
-                    unstash 'testFuncDevSources'
-                    junit "tests/functional/_report/*.xml"
-
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [
-                            [path: "tests/functional/_report/"]
-                        ]
-                    ])
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Validação da implantação no *ambiente de desenvolvimento* realizada com sucesso.")
                 }
                 failure {
@@ -647,16 +616,6 @@ pipeline {
             }
             post {
                 success {
-                    junit "tests/functional/_report/*.xml"
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [
-                            [path: "tests/functional/_report/"]
-                        ]
-                    ])
                     slackSend(color: "#073d15", channel: slack?.threadId, message: "Validação da implantação no *ambiente de homologação* realizada com sucesso.")
                 }
                 failure {
@@ -824,13 +783,36 @@ pipeline {
                 "*Job:* ${env.JOB_NAME} - (${env.JOB_URL})\n" +
                 "*Build:* ${env.BUILD_ID} - (${env.BUILD_URL})\n"
             )
-            
-            //junit "tests/_reports/**/*.xml"
 
-            /*script {
+            junit "tests/unit/_reports/logs/junit.xml"
+
+            publishHTML target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: false,
+                keepAll: true,
+                reportDir: 'tests/unit/_reports/coverage',
+                reportFiles: 'index.html',
+                reportName: 'coverage'
+                    ]
+            
+            allure([
+                includeProperties: false,
+                jdk: '',
+                properties: [],
+                reportBuildPolicy: 'ALWAYS',
+                results: [
+                    [path: "tests/unit/_reports/logs/"],
+                    [path: "tests/smoke/_report/"],
+                    [path: "tests/functional/_report/"]
+                ]
+            ])
+
+            unstash 'testFuncDevSources'
+            script {
                 sh "zip -r dist.zip ./"
-            }*/
-            //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
+            }
+            
+            archiveArtifacts artifacts: 'dist.zip', fingerprint: true
 
             cleanWs()
             
