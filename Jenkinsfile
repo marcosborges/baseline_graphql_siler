@@ -62,9 +62,6 @@ pipeline {
             steps {
                 script {
                     currentBuild.description = "App:${env.APP_NAME}, Version:${env.APP_VERSION}"
-                }
-
-                script {
                     commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
                     slack = slackSend(
                         notifyCommitters : true,
@@ -484,7 +481,7 @@ pipeline {
                 slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Iniciando a implantação da nova versão no ambiente de homologação.")
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
-                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_DEV, text: ''
+                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_UAT, text: ''
                     def envDataColl = envData.collect{ "${it.key}=${it.value}" }
                      _environments.uat.name = "uat-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
@@ -706,7 +703,7 @@ pipeline {
             steps {
                 script {
                     def data = readJSON file: env.GOOGLE_APPLICATION_CREDENTIALS 
-                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_DEV, text: ''
+                    def envData = readProperties defaults: [:], file: env.APP_ENVFILE_PRD, text: ''
                     def envDataColl = envData.collect{ "${it.key}=${it.value}" }
                     _environments.prd.name = "prd-${env.APP_NAME.toLowerCase().replace('_','-').replace('/','-').replace('.','-')}"
                     sh """
@@ -817,10 +814,6 @@ pipeline {
 
     post {
 
-        always {
-            cleanWs()
-        }
-
         success {
             slackSend(color: "#073d15", channel: slack?.threadId, message: "*Processo de CI/CD* finalizado com sucesso!\n\n" +
                 "Para mais detalhes acesse os links abaixo:\n" +
@@ -839,6 +832,7 @@ pipeline {
             }*/
             //archiveArtifacts artifacts: 'dist.zip', fingerprint: true
 
+            cleanWs()
             
         }
 
