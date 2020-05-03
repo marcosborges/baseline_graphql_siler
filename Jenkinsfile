@@ -787,13 +787,13 @@ pipeline {
             )
 
             junit "tests/unit/_reports/logs/junit.xml"
-            junit "tests/smoke/_report/dev-newman-report.xml"
+            /*junit "tests/smoke/_report/dev-newman-report.xml"
             junit "tests/smoke/_report/uat-newman-report.xml"
             junit "tests/smoke/_report/prd-newman-report.xml"
             junit "tests/functional/_report/dev-newman-report.xml"
             junit "tests/functional/_report/uat-newman-report.xml"
             junit "tests/functional/_report/prd-newman-report.xml"
-            junit "tests/load/taurus.xml"
+            junit "tests/load/taurus.xml"*/
 
             publishHTML target: [
                 allowMissing: false,
