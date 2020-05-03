@@ -62,7 +62,8 @@ pipeline {
             steps {
                 script {
                     currentBuild.description = "App:${env.APP_NAME}, Version:${env.APP_VERSION}"
-                    commit = sh(returnStdout: true, script: 'git rev-parse --short=8 HEAD').trim()
+
+                    commit = sh(label: "Get short commit", script: 'git rev-parse --short=8 HEAD', returnStdout: true).trim()
                     slack = slackSend(
                         notifyCommitters : true,
                         color : "#162e63",
@@ -106,7 +107,7 @@ pipeline {
             }
             steps {
                 slackSend( color : "#7a7c80",  channel: slack?.threadId, message: "Iniciando a restauração das dependências.")
-                sh " composer -q -n install "
+                sh label: "Composer intall", script: " composer -q -n install "
                 stash includes: 'vendor/**/*', name: 'restoreSources'
             }
             post {
@@ -769,6 +770,12 @@ pipeline {
     post {
 
         success {
+
+            unstash 'checkoutSources'
+            unstash 'restoreSources'
+            unstash 'testSources'
+            unstash 'testFuncDevSources'
+            
             slackSend(color: "#073d15", channel: slack?.threadId, message: "*Processo de CI/CD* finalizado com sucesso!\n\n" +
                 "Para mais detalhes acesse os links abaixo:\n" +
                 "*Sonar:* https://sonarcloud.io/dashboard?id=${env.SONAR_PROJECT_KEY}\n" +
@@ -788,7 +795,7 @@ pipeline {
                 reportDir: 'tests/unit/_reports/coverage',
                 reportFiles: 'index.html',
                 reportName: 'coverage'
-                    ]
+            ]
             
             allure([
                 includeProperties: false,
@@ -798,11 +805,11 @@ pipeline {
                 results: [
                     [path: "tests/unit/_reports/logs/"],
                     [path: "tests/smoke/_report/"],
-                    [path: "tests/functional/_report/"]
+                    [path: "tests/functional/_report/"],
+                    [path: "tests/load/"]
                 ]
             ])
 
-            unstash 'testFuncDevSources'
             script {
                 sh "zip -r dist.zip ./"
             }
