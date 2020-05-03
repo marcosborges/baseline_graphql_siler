@@ -42,8 +42,8 @@ reporting:
   percentiles: true  # display average times and percentiles
   failed-labels: true  # provides list of sample labels with failures
   test-duration: true  # provides test duration
-  dump-csv: ./taurus.csv
-  dump-xml: ./taurus.xml
+  dump-csv: ./tests/load/_result/load.csv
+  dump-xml: ./tests/load/_result/load.xml
 #- module: console
 - module: passfail
   criteria:

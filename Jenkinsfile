@@ -308,7 +308,6 @@ pipeline {
                                 contentType : "APPLICATION_JSON",
                                 validResponseCodes : "200"
                             )
-                            //sh """ curl -X GET -H "Content-type: application/json" ${_environments.dev.url}/health """ 
                         }
                     }
                 }
@@ -322,14 +321,12 @@ pipeline {
                     steps {
                         unstash 'checkoutSources'
                         script {
-
                             def _newmanEnv = readJSON file: "${pwd()}/tests/smoke/environment.json"
                             for ( pe in _newmanEnv.values ) {
                                 if ( pe.key == "hostname" ) {
                                     pe.value = "${_environments.dev.url}".toString()
                                 }
                             }
-
                             new File(
                                 "${pwd()}/tests/smoke/dev-environment.json"
                             ).write(
@@ -337,7 +334,6 @@ pipeline {
                                     _newmanEnv
                                 )
                             )
-
                             echo "Aplicação publicada com sucesso: ${_environments.dev.url}" 
                             sh """
                                 newman run \
@@ -510,7 +506,6 @@ pipeline {
                                 contentType : "APPLICATION_JSON",
                                 validResponseCodes : "200"
                             )
-                            //sh """ curl -X GET -H "Content-type: application/json"  """ 
                         }
                     }
                 }
