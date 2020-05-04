@@ -1,4 +1,4 @@
-# Base line graphql siler
+# Baseline Graphql Siler
 
 ![](assets/tech.png)
 
