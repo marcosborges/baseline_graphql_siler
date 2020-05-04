@@ -1,5 +1,0 @@
-version: '3'
-
-services:
- app:
-   image: gcr.io/marcosborges/baseline_graphql_siler:${DOCKER_IMAGE_TAG:-latest}
