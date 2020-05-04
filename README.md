@@ -2,9 +2,11 @@
 
 ## Sobre a aplicação
 
-Aplicação base utilizando **php7**, **swoole**, **Siler FW** e **Graphql** para demonstração de esteira **CI/CD** entre diferentes estágios.
+Aplicação base utilizando **Php7**, **Swoole**, **Siler FW** e **Graphql** para demonstração de esteira **CI/CD** entre diferentes estágios.
 
 ## Jekinsfile
+
+![](assets/pipeline.png)
 
 ### Resumo
 
