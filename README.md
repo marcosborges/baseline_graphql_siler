@@ -22,6 +22,8 @@ Pipeline CI/CD entre 3 estágios: desenvolvimento, homologação e produção.
 
 *Todo o passo a passo da esteira é notificado no slack e todas as interações que a esteira necessita também são enviadas para o slack contendo um link de acesso a interação.*
 
+![](assets/slack.png)
+
 ### Requisitos
 
 #### Credenciais
