@@ -1,5 +1,7 @@
 # Base line graphql siler
 
+![](assets/tech.png)
+
 ## Sobre a aplicação
 
 Aplicação base utilizando **Php7**, **Swoole**, **Siler FW** e **Graphql** para demonstração de esteira **CI/CD** entre diferentes estágios.
