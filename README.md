@@ -110,6 +110,7 @@ Serão necessários os seguintes plugin que podem ser instalados na área de ger
 ***Vídeo de apoio para instalação***
 [![Instalar o Jenkins](assets/install-jenkins.png)](https://www.youtube.com/watch?v=8Dw4KZ0nw-w)
 
+---
 
 ### **Configurar as credenciais**
 
@@ -127,6 +128,7 @@ Caso não deseje utilizar o slack você pode comentar todas as linhas do Jenkins
 
 Crie 3 credenciais do tipo text para armazenar os arquivos de variaveis de ambiente (.env), um para cada ambiente: APP_ENVFILE_DEV, APP_ENVFILE_UAT e APP_ENVFILE_PRD
 
+---
 
 ### **Criar a pipeline**
 
