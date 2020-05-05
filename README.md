@@ -116,7 +116,7 @@ Serão necessários os seguintes plugin que podem ser instalados na área de ger
 
 #### Sonarqube
 
-Acesse o ***[sonarcloud](https://sonarcloud.io/)***, realize o cadastro, pode utilizar seu login do github, a analise é gratuita para projetos publicos. Faça a importação do seu projeto e depois vá em configurações e gere um token. Com esse token em mãos crie /home/dashboard?project=marcosborges&_ga=2.87420440.1242060558.1588562697-1283034868.1562851372&_gac=1.254083772.1587876597.EAIaIQobChMIqunahaWF6QIVFQeRCh3MAwLWEAAYASAAEgInYfD_BwEl: **https://sonarcloud.io/** e selecione a credencial: **SONAR_KEY**
+Acesse o ***[sonarcloud](https://sonarcloud.io/)***, realize o cadastro, pode utilizar seu login do github, a analise é gratuita para projetos publicos. Faça a importação do seu projeto e depois vá em configurações e gere um token. Com esse token em mãos crie uma credencial chamada **SONAR_KEY** do tipo texto. Vá ate a área de gerenciamento do Jenkins, clique em configurações na sessão "SonarQube servers", informe o nome **SonarQubeCloud**, a url: **https://sonarcloud.io/** e selecione a credencial: **SONAR_KEY**
 
 #### Slack
 
