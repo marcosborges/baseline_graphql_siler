@@ -116,7 +116,7 @@ Serão necessários os seguintes plugin que podem ser instalados na área de ger
 
 #### Sonarqube
 
-Acesse o ***[sonarcloud](https://sonarcloud.io/)***, realize o cadastro, pode utilizar seu login do github, a analise é gratuita para projetos publicos. Faça a importação do seu projeto e depois vá em configurações e gere um token. Com esse token em mãos crie uma credencial chamada **SONAR_KEY** do tipo texto. Vá ate a área de gerenciamento do Jenkins, clique em configurações na sessão "SonarQube servers", informe o nome **SonarQubeCloud**, a url: **https://sonarcloud.io/** e selecione a credencial: **SONAR_KEY**
+Acesse o ***[sonarcloud](https://sonarcloud.io/)***, realize o cadastro, pode utilizar seu login do github, a analise é gratuita para projetos publicos. Faça a importação do seu projeto e depois vá em configurações e gere um token. Com esse token em mãos crie /home/dashboard?project=marcosborges&_ga=2.87420440.1242060558.1588562697-1283034868.1562851372&_gac=1.254083772.1587876597.EAIaIQobChMIqunahaWF6QIVFQeRCh3MAwLWEAAYASAAEgInYfD_BwEl: **https://sonarcloud.io/** e selecione a credencial: **SONAR_KEY**
 
 #### Slack
 
@@ -127,6 +127,10 @@ Caso não deseje utilizar o slack você pode comentar todas as linhas do Jenkins
 #### Variáveis de ambiente
 
 Crie 3 credenciais do tipo text para armazenar os arquivos de variaveis de ambiente (.env), um para cada ambiente: APP_ENVFILE_DEV, APP_ENVFILE_UAT e APP_ENVFILE_PRD
+
+#### Conta de serviço do GCP (Google Cloud Platform)
+
+Acesse o painel do [GCP](https://console.cloud.google.com) realize o cadastro, cadastre o meio de pagamento e vá até a área IAM -> contas de serviço, crie uma nova chave de serviço e salve o arquivo.json como uma credencial do tipo arquivo chamado GCP_SERVICE_ACCOUNT em seu Jenkins.
 
 ---
 
