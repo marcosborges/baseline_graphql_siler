@@ -701,7 +701,7 @@ pipeline {
             }
         }
 
-        stage( 'Validation (Production)' ) {
+        stage ( 'Validation (Production)' ) {
             parallel {
                 stage ("notify") {
                     steps {

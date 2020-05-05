@@ -1,16 +1,20 @@
-# Baseline Graphql Siler
+# **Baseline Graphql Siler**
 
 ![](assets/tech.png)
 
-## Sobre a aplicação
+## **Sobre a aplicação**
 
 Aplicação base utilizando **Php7**, **Swoole**, **Siler FW** e **Graphql** para demonstração de esteira **CI/CD** entre diferentes estágios.
 
-## Jekinsfile
+---
+
+## **Jekinsfile**
 
 ![](assets/pipeline.png)
 
-### Resumo
+---
+
+### **Resumo**
 
 Pipeline CI/CD entre 3 estágios: desenvolvimento, homologação e produção.
 
@@ -24,9 +28,11 @@ Pipeline CI/CD entre 3 estágios: desenvolvimento, homologação e produção.
 
 ![](assets/slack.png)
 
-### Requisitos
+---
 
-#### Credenciais
+### **Requisitos**
+
+#### ***Credenciais***
 
 - ***SONAR_KEY*** - Chave de acesso ao sonar https://sonarcloud.io/
 - ***GCP_SERVICE_ACCOUNT*** - Conta de Serviço criado no GCP.
@@ -35,6 +41,8 @@ Pipeline CI/CD entre 3 estágios: desenvolvimento, homologação e produção.
 - ***APP_ENVFILE_DEV*** - Arquivo de variáveis de ambiente da aplicação para o stage de desenvolvimento.
 - ***APP_ENVFILE_UAT*** - Arquivo de variáveis de ambiente da aplicação para o stage de homologação.
 - ***APP_ENVFILE_PRD*** - Arquivo de variáveis de ambiente da aplicação para o stage de produção.
+
+---
 
 ### **Passos da esteira**
 
@@ -67,3 +75,63 @@ Pipeline CI/CD entre 3 estágios: desenvolvimento, homologação e produção.
 **- Deploy (Production)**: Implanta o container como produçpão na plataforma Google Cloud Platform (GCP), utilizando o serviço ***Cloud Run***. Durante a implantação serão utilizadas as variáveis definidas no arquivo .env armazenado como credencial do tipo arquivo (***APP_ENVFILE_PRD***).
 
 **- Validation (Production)**: Valida a implantação em produção aguardando o endpoint de health e realiza um smoke test. Em caso de falha realiza o rollback para versão anterior.
+
+---
+
+## **COMO UTILIZAR**
+
+### **Instalar o Jenkins**
+
+Instale o Jenkins seguinto as instruções do site https://www.jenkins.io/download/
+
+Serão necessários os seguintes plugin que podem ser instalados na área de gerenciamento do Jenkins:
+	
+- Allure Jenkins Plugin
+- Blue Ocean
+- Build Timeout
+- Cobertura Plugin
+- Command Agent Launcher Plugin
+- Config File Provider Plugin
+- Docker plugin
+- docker-build-step
+- HTTP Request Plugin
+- HTML Publisher plugin
+- Pipeline
+- Pipeline Utility Steps
+- Slack Notification Plugin
+- SonarQube Scanner for Jenkins
+- SSH Agent Plugin
+- SSH Pipeline Steps
+- SSH plugin
+- Workspace Cleanup Plugin
+
+
+
+***Vídeo de apoio para instalação***
+[![Instalar o Jenkins](assets/install-jenkins.png)](https://www.youtube.com/watch?v=8Dw4KZ0nw-w)
+
+
+### **Configurar as credenciais**
+
+#### Sonarqube
+
+Acesse o ***[sonarcloud](https://sonarcloud.io/)***, realize o cadastro, pode utilizar seu login do github, a analise é gratuita para projetos publicos. Faça a importação do seu projeto e depois vá em configurações e gere um token. Com esse token em mãos crie uma credencial chamada **SONAR_KEY** do tipo texto. Vá ate a área de gerenciamento do Jenkins, clique em configurações na sessão "SonarQube servers", informe o nome **SonarQubeCloud**, a url: **https://sonarcloud.io/** e selecione a credencial: **SONAR_KEY**
+
+#### Slack
+
+Acesse o [slack](https://api.slack.com/apps) faça seu cadastro, criei um novo aplicativo, habilite o bot e configure o escopo de permição para ler e gravar mensagens nos canais. Crie uma credencial chamada SLACK_BOT_KEY do tipo texto e armazene o token gerado no painel do slack. Na área de gerenciamento do jenkins vá até a sessão Slack, forneça a url da sua workspace (ex: marcosborgesworkspace.slack.com) selecione a credencial SLACK_BOT_KEYe informe o id do canal (ex: C012UE84TN1).
+
+Caso não deseje utilizar o slack você pode comentar todas as linhas do Jenkinsfile que contem o comando: *slackSend(...*
+
+#### Variáveis de ambiente
+
+Crie 3 credenciais do tipo text para armazenar os arquivos de variaveis de ambiente (.env), um para cada ambiente: APP_ENVFILE_DEV, APP_ENVFILE_UAT e APP_ENVFILE_PRD
+
+
+### **Criar a pipeline**
+
+Acesse o jenkins crie um job do tipo pipeline, vá até a sessão pipeline troque para "script from SCM", no campo SCM selecione git e informe o endereço do repositório: https://github.com/marcosborges/baseline_graphql_siler.git
+
+
+***Vídeo de apoio para criação de pipeline***
+[![Instalar o Jenkins](assets/siler.png)](https://www.youtube.com/watch?v=M3pfpjIVgxo)
