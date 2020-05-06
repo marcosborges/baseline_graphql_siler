@@ -124,6 +124,10 @@ Acesse o [slack](https://api.slack.com/apps) faça seu cadastro, criei um novo a
 
 Caso não deseje utilizar o slack você pode comentar todas as linhas do Jenkinsfile que contem o comando: *slackSend(...*
 
+***Vídeo de apoio a configuração do slack***
+[![Configurar o slack](assets/slack-notification.png)](https://youtu.be/K5efO53bbCA)
+
+
 #### Variáveis de ambiente
 
 Crie 3 credenciais do tipo text para armazenar os arquivos de variaveis de ambiente (.env), um para cada ambiente: APP_ENVFILE_DEV, APP_ENVFILE_UAT e APP_ENVFILE_PRD
