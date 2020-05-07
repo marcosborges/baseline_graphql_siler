@@ -145,3 +145,15 @@ Acesse o jenkins crie um job do tipo pipeline, vá até a sessão pipeline troqu
 
 ***Vídeo de apoio para criação de pipeline***
 [![Instalar o Jenkins](assets/siler.png)](https://www.youtube.com/watch?v=M3pfpjIVgxo)
+
+---
+
+## **Próximos passos**
+
+- Obter cobertura dos **smoke tests** e utilizar percentual mínimo para promoção;
+- Obter cobertura dos **functional tests** e utilizar percentual mínimo para promoção;
+- Obter cobertura dos **load tests** e utilizar percentual mínimo para promoção;
+- Nos passos de validação adicionar automação para validar segurança (OWASPZAP ZED);
+- Adicionar passo para realizar migrações (FlywayDB)
+- Provisionamento dinamico de recursos;
+
