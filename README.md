@@ -166,4 +166,5 @@ Acesse o jenkins crie um job do tipo pipeline, vá até a sessão pipeline troqu
 - [ ] Static code  security analysis
 - [ ] Dynamic security analysis
 - [ ] Semantic code analysis (ex: codeQL)
+- [ ] Container security analysis (ex: github.com/goodwithtech/dockle, github.com/aquasecurity/trivy, https://kubesec.io/)
 
