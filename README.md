@@ -157,7 +157,7 @@ Acesse o jenkins crie um job do tipo pipeline, vá até a sessão pipeline troqu
 - Adicionar passo para realizar migrações (FlywayDB)
 - Provisionamento dinamico de recursos;
 
-## **Secutiry**
+## **Security**
 
 - [x] Code quality (Sonarqube)
 - [ ] Security linter (ex: findsecbugs)
