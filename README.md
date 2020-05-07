@@ -158,11 +158,12 @@ Acesse o jenkins crie um job do tipo pipeline, vá até a sessão pipeline troqu
 - Provisionamento dinamico de recursos;
 
 ## **Secutiry**
-[x] Code quality (Sonarqube)
-[ ] Security linter (ex: findsecbugs)
-[ ] Sensitive info / secrets scanner
-[ ] Dependency security analysis check
-[ ] Static code  security analysis
-[ ] Dynamic security analysis
-[ ] Semantic code analysis (ex: codeQL)
+
+- [x] Code quality (Sonarqube)
+- [ ] Security linter (ex: findsecbugs)
+- [ ] Sensitive info / secrets scanner
+- [ ] Dependency security analysis check
+- [ ] Static code  security analysis
+- [ ] Dynamic security analysis
+- [ ] Semantic code analysis (ex: codeQL)
 
